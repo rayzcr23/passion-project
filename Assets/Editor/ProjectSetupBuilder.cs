@@ -202,6 +202,7 @@ public static class ProjectSetupBuilder
         swing.arcDegrees = 120f;
         swing.damage = 10;
         swing.windupSeconds = 0.15f;
+        swing.pointBlankRadius = 0.7f;
         swing.knockback = 2f;
         swing.friendlyFire = true;                        // brothers can duel
         // Both layers, or the swing would pass straight through other players.

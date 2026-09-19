@@ -17,6 +17,12 @@ public class MeleeArcAbility : Ability
     public LayerMask hitLayers = ~0;
     public int maxTargets = 8;
 
+    [Tooltip("Inside this distance the arc widens to the full forward hemisphere. " +
+         "A target shoving against you slides around your collider, so its angle " +
+         "swings wildly exactly when it is closest - a narrow cone rejects the very " +
+         "enemies you are standing on. Still never hits anything strictly behind.")]
+    public float pointBlankRadius = 0.7f;
+
     [Tooltip("On: brothers can hit each other (duels, PvP). Off: co-op PvE only.")]
     public bool friendlyFire = true;
 
@@ -67,10 +73,16 @@ public class MeleeArcAbility : Ability
             // the vector and bypassing the arc test entirely - which is how enemies
             // behind you were getting hit.
             Vector2 toTarget = (Vector2)col.bounds.center - centre;
+            float distance = toTarget.magnitude;
 
-            // Only truly concentric now, which OverlapCircle already says is in range.
-            if (toTarget.sqrMagnitude > 0.000001f &&
-                Vector2.Angle(aimDirection, toTarget.normalized) > halfArc) continue;
+            // Angle resolution degrades as distance approaches zero, so relax toward
+            // a forward hemisphere at contact rather than demanding the narrow cone.
+            float acceptHalfArc = distance <= pointBlankRadius
+                ? Mathf.Max(halfArc, 90f)
+                : halfArc;
+
+            if (distance > 0.001f &&
+                Vector2.Angle(aimDirection, toTarget / distance) > acceptHalfArc) continue;
 
             target.ServerTakeDamage(damage, OwnerClientId);
 
