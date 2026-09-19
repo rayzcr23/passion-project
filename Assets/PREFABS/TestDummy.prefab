@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 8155328996166784598}
   - component: {fileID: 8079963544487535865}
   - component: {fileID: 6781824584003737716}
+  - component: {fileID: 6057394784715319418}
+  - component: {fileID: 4933729416785148543}
   m_Layer: 8
   m_Name: TestDummy
   m_TagString: Untagged
@@ -167,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3269656348
+  GlobalObjectIdHash: 3797205005
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -243,3 +245,43 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
   despawnOnDeath: 1
+--- !u!114 &6057394784715319418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4498245789169221578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f879e5728ca2b7449a75190fd12e0d80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  aggroRange: 6
+  attackRange: 0.9
+  giveUpRange: 10
+  moveSpeed: 2
+  damage: 5
+  attackCooldown: 1.2
+--- !u!114 &4933729416785148543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4498245789169221578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67e063640e59e274c9027691ed567d13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: {fileID: 6781824584003737716}
+  offset: {x: 0, y: 0.85, z: 0}
+  width: 0.7
+  height: 0.1
+  fillColor: {r: 0.3, g: 0.85, b: 0.35, a: 1}
+  lowColor: {r: 0.9, g: 0.25, b: 0.25, a: 1}
+  backColor: {r: 0.08, g: 0.08, b: 0.1, a: 0.85}
+  hideWhenFull: 1
+  lowThreshold: 0.3

@@ -19,6 +19,7 @@ public class PlayerDeath : NetworkBehaviour
     SpriteRenderer sprite;
     Rigidbody2D rb;
     Vector3 startPosition;
+    int startSortingOrder;
 
     void Awake()
     {
@@ -30,6 +31,7 @@ public class PlayerDeath : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         startPosition = transform.position;
+        if (sprite != null) startSortingOrder = sprite.sortingOrder;
 
         if (IsServer) health.OnDied += ServerHandleDeath;
         dead.OnValueChanged += HandleDeadChanged;
@@ -61,6 +63,10 @@ public class PlayerDeath : NetworkBehaviour
 
         if (respawnAtStart) TeleportRpc(startPosition);
 
+        // Elevation triggers leave sorting at 15 up on the plateau; respawning at
+        // the start means dropping back to ground level, so restore it everywhere.
+        RestoreSortingRpc(startSortingOrder);
+
         health.ServerRevive();
         dead.Value = false;
     }
@@ -71,6 +77,12 @@ public class PlayerDeath : NetworkBehaviour
     {
         transform.position = position;
         if (rb != null) rb.linearVelocity = Vector2.zero;
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    void RestoreSortingRpc(int order)
+    {
+        if (sprite != null) sprite.sortingOrder = order;
     }
 
     void HandleDeadChanged(bool previous, bool now)
