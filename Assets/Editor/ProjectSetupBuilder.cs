@@ -102,10 +102,6 @@ public static class ProjectSetupBuilder
             if (move.body == null) move.body = root.GetComponent<SpriteRenderer>();
         }
 
-        // Superseded by AbilityLoadout + MeleeArcAbility.
-        var old = root.GetComponent<RangedAttack>();
-        if (old != null) Object.DestroyImmediate(old, true);
-
         PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefab);
         PrefabUtility.UnloadPrefabContents(root);
     }
