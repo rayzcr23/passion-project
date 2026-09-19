@@ -33,6 +33,15 @@ public class MeleeArcAbility : Ability
     [Header("Feel")]
     public float knockback = 2f;
 
+    [Header("Debug")]
+    [Tooltip("Draws the swing in the Scene view during play: cyan = the direction " +
+         "the arc actually used, green = target hit, red = target rejected. The " +
+         "swing runs on the SERVER, so watch the host instance.")]
+    public bool debugDraw = false;
+
+    [Tooltip("Logs the aim vector and every candidate's distance and angle.")]
+    public bool debugLog = false;
+
     protected override void OnServerActivate(Vector2 aimDirection)
     {
         StartCoroutine(SwingRoutine(aimDirection));
@@ -55,6 +64,16 @@ public class MeleeArcAbility : Ability
         float ownExtent = ownCollider != null
             ? Mathf.Max(ownCollider.bounds.extents.x, ownCollider.bounds.extents.y)
             : 0.3f;
+
+        if (debugDraw)
+        {
+            Debug.DrawRay(centre, aimDirection.normalized * range, Color.cyan, 1.5f);
+            DrawCircle(centre, range, new Color(1f, 0.5f, 0.2f, 1f), 1.5f);
+        }
+
+        if (debugLog)
+            Debug.Log(string.Format("[swing] aim=({0:F2},{1:F2}) candidates={2}",
+                aimDirection.x, aimDirection.y, candidates.Length));
 
         foreach (Collider2D col in candidates)
         {
@@ -94,8 +113,20 @@ public class MeleeArcAbility : Ability
                 ? Mathf.Max(halfArc, 135f)
                 : halfArc;
 
-            if (distance > 0.001f &&
-                Vector2.Angle(aimDirection, toTarget / distance) > acceptHalfArc) continue;
+            float angle = distance > 0.001f
+                ? Vector2.Angle(aimDirection, toTarget / distance)
+                : 0f;
+            bool rejected = angle > acceptHalfArc;
+
+            if (debugDraw)
+                Debug.DrawLine(centre, col.bounds.center,
+                    rejected ? Color.red : Color.green, 1.5f);
+
+            if (debugLog)
+                Debug.Log(string.Format("[swing]   {0}: dist={1:F2} angle={2:F0} accept={3:F0} -> {4}",
+                    col.name, distance, angle, acceptHalfArc, rejected ? "MISS" : "HIT"));
+
+            if (rejected) continue;
 
             target.ServerTakeDamage(damage, OwnerClientId);
 
@@ -130,6 +161,20 @@ public class MeleeArcAbility : Ability
     void ConnectedRpc(int targetsHit)
     {
         CameraFollow.Shake(Mathf.Min(0.22f + 0.06f * (targetsHit - 1), 0.5f));
+    }
+
+    static void DrawCircle(Vector2 centre, float radius, Color color, float duration)
+    {
+        const int segments = 24;
+        Vector3 previous = centre + new Vector2(radius, 0f);
+
+        for (int i = 1; i <= segments; i++)
+        {
+            float a = i / (float)segments * Mathf.PI * 2f;
+            Vector3 next = centre + new Vector2(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius);
+            Debug.DrawLine(previous, next, color, duration);
+            previous = next;
+        }
     }
 
     // Draws the wedge in the Scene view so the range and angle can be tuned by eye.
