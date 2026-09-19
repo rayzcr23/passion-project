@@ -18,6 +18,11 @@ public class Movement : NetworkBehaviour
     public bool faceAimAlways = false;
     public int facingDirection = 1;
 
+    /// Last non-zero movement direction, normalised. This is what a keyboard player
+    /// means by "in front of me" - facingDirection is only left/right and cannot
+    /// express up or down.
+    public Vector2 LastMoveDirection { get; private set; } = Vector2.right;
+
     // flipX is not covered by NetworkTransform or NetworkAnimator, so without this
     // every remote player permanently faces right.
     readonly NetworkVariable<bool> facingLeft = new NetworkVariable<bool>();
@@ -74,6 +79,8 @@ public class Movement : NetworkBehaviour
         anim.SetFloat("Vertical", Mathf.Abs(input.y) > 0.1f ? 1f : 0f);
 
         float speedScale = (guard != null && guard.IsBlocking) ? guard.moveSpeedMultiplier : 1f;
+        if (input.sqrMagnitude > 0.0001f) LastMoveDirection = input.normalized;
+
         rb.linearVelocity = input * speed * speedScale;
 
         // Facing follows movement. The pointer is consulted ONLY when faceAimAlways

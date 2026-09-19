@@ -281,6 +281,7 @@ public static class ProjectSetupBuilder
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
+        loadout.usePointerAim = false;   // swing where you walk, not where the cursor sits
         loadout.death = death;
         loadout.guard = guard;
 

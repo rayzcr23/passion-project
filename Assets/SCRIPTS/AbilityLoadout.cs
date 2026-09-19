@@ -20,6 +20,9 @@ public class AbilityLoadout : NetworkBehaviour
          "triggers them. On: abilities aim at the pointer.")]
     public bool usePointerAim = true;
 
+    /// Exposed for the diagnostics overlay.
+    public Vector2 LastAttackDirection { get; private set; } = Vector2.right;
+
     public KeyCode specialKey = KeyCode.Q;
     public KeyCode superKey = KeyCode.E;
 
@@ -37,11 +40,14 @@ public class AbilityLoadout : NetworkBehaviour
         if (death != null && death.IsDead) return;
         if (guard != null && guard.IsBlocking) return;   // shield up, no attacking
 
-        Vector2 facing = new Vector2(movement != null ? movement.facingDirection : 1, 0f);
+        // Movement direction, not facingDirection: facing is only left/right, so a
+        // keyboard player could never swing up or down.
+        Vector2 fallback = movement != null
+            ? movement.LastMoveDirection
+            : Vector2.right;
 
-        // Before the pointer has ever been read, aim is still the default right,
-        // so swinging where you face beats swinging east forever.
-        Vector2 dir = (usePointerAim && aim.HasAim) ? aim.AimDirection : facing;
+        Vector2 dir = (usePointerAim && aim.HasAim) ? aim.AimDirection : fallback;
+        LastAttackDirection = dir;
 
         if (m1 != null && (aim.FireHeld || aim.FirePressed)) m1.TryActivate(dir);
         if (special != null && Input.GetKeyDown(specialKey)) special.TryActivate(dir);

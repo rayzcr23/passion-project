@@ -57,6 +57,28 @@ public class NetworkDiagnostics : MonoBehaviour
                 ? nm.SpawnManager.GetLocalPlayerObject() : null;
 
             sb.AppendLine("My player: " + Describe(localPlayer));
+
+            if (localPlayer != null)
+            {
+                var aim = localPlayer.GetComponent<AimInput>();
+                var loadout = localPlayer.GetComponent<AbilityLoadout>();
+                var move = localPlayer.GetComponent<Movement>();
+
+                if (aim != null)
+                    sb.AppendLine(string.Format("Aim: ({0:F2},{1:F2}) hasAim={2}",
+                        aim.AimDirection.x, aim.AimDirection.y, aim.HasAim ? "Y" : "n"));
+
+                if (move != null)
+                    sb.AppendLine(string.Format("Move dir: ({0:F2},{1:F2})  facing={2}",
+                        move.LastMoveDirection.x, move.LastMoveDirection.y,
+                        move.facingDirection > 0 ? "R" : "L"));
+
+                if (loadout != null)
+                    sb.AppendLine(string.Format("ATTACK dir: ({0:F2},{1:F2})  pointerAim={2}",
+                        loadout.LastAttackDirection.x, loadout.LastAttackDirection.y,
+                        loadout.usePointerAim ? "ON" : "off"));
+            }
+
             sb.AppendLine();
 
             // Clients list is server-only; a client can still walk its own spawns.
