@@ -14,6 +14,7 @@ public static class ProjectSetupBuilder
     const string PlayerPrefab = "Assets/PREFABS/Warrior.prefab";
     const string EnemyPrefab = "Assets/PREFABS/Goblin.prefab";
     const string EnemyController = "Assets/ANIMATIONS/Goblin.controller";
+    const string DeathPoofPrefab = "Assets/PREFABS/DeathPoof.prefab";
     const string GoblinSheet = "Assets/Tiny Swords/Tiny Swords (Update 010)/Factions/Goblins/Troops/Torch/Red/Torch_Red.png";
     const string Controller = "Assets/ANIMATIONS/PlayerBase.controller";
     const string EnemyLayer = "Enemy";
@@ -300,6 +301,16 @@ public static class ProjectSetupBuilder
         Health hp = Ensure<Health>(go);
         hp.maxHealth = 30;
         hp.despawnOnDeath = true;                 // enemies leave the world
+        hp.despawnDelay = 0.6f;                   // long enough for DeathEffect to play
+
+        DeathEffect death = Ensure<DeathEffect>(go);
+        death.effectPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+        death.effectScale = 0.7f;
+        death.fadeSeconds = 0.45f;
+        death.shrinkTo = 0.55f;
+        death.spinDegrees = 25f;
+        if (death.effectPrefab == null)
+            Debug.LogWarning("[Wanderers] No DeathPoof yet - run Build Death Effect first.");
 
         ConfigureBrain(Ensure<EnemyBrain>(go));
         ConfigureEnemyBar(Ensure<HealthBar>(go), hp);

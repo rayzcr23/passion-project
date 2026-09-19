@@ -10,6 +10,10 @@ public class Health : NetworkBehaviour
     public int maxHealth = 100;
     public bool despawnOnDeath = true;      // true for enemies, false for players
 
+    [Tooltip("Server waits this long before removing the body, so DeathEffect has " +
+         "time to play. 0 despawns immediately.")]
+    public float despawnDelay = 0.6f;
+
     readonly NetworkVariable<int> current = new NetworkVariable<int>();
 
     public int Current => current.Value;
@@ -74,7 +78,20 @@ public class Health : NetworkBehaviour
     void ServerDie()
     {
         // Players stay in the world so they can be revived; enemies leave.
-        if (despawnOnDeath && NetworkObject != null && NetworkObject.IsSpawned)
-            NetworkObject.Despawn();
+        if (!despawnOnDeath) return;
+
+        if (despawnDelay > 0f) StartCoroutine(DespawnRoutine());
+        else DespawnNow();
+    }
+
+    System.Collections.IEnumerator DespawnRoutine()
+    {
+        yield return new WaitForSeconds(despawnDelay);
+        DespawnNow();
+    }
+
+    void DespawnNow()
+    {
+        if (NetworkObject != null && NetworkObject.IsSpawned) NetworkObject.Despawn();
     }
 }
