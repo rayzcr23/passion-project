@@ -1,9 +1,10 @@
+using Unity.Netcode;
 using UnityEngine;
 
 /// Single source of aim + fire input. Gameplay scripts read AimDirection/FireHeld
 /// from here and never touch Input.mousePosition or Input.touches themselves, so
 /// desktop and iPad share one code path.
-public class AimInput : MonoBehaviour
+public class AimInput : NetworkBehaviour
 {
     [Header("Origin")]
     public Transform aimOrigin;             // aim is measured from here; defaults to this object
@@ -39,6 +40,10 @@ public class AimInput : MonoBehaviour
 
     void Update()
     {
+        // Only the player who owns this character reads their own device.
+        // Without this, one person's keyboard would drive everybody's character.
+        if (!IsOwner) return;
+
         if (cam == null) cam = Camera.main;
         FirePressed = false;
 

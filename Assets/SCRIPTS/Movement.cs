@@ -1,6 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class Movement : MonoBehaviour
+public class Movement : NetworkBehaviour
 {
     public float speed;
     public Rigidbody2D rb;
@@ -16,8 +17,17 @@ public class Movement : MonoBehaviour
         if (aim == null) aim = GetComponent<AimInput>();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        // Remote copies are positioned by NetworkTransform, so their physics must not
+        // fight it. Only the owner runs real dynamics.
+        if (!IsOwner && rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
+    }
+
     void FixedUpdate()
     {
+        if (!IsOwner) return;
+
         Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
         // Diagonals used to come out ~41% faster than cardinals.

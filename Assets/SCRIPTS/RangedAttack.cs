@@ -1,8 +1,9 @@
+using Unity.Netcode;
 using UnityEngine;
 
 /// Fires the projectile along AimInput's direction on a cooldown.
 /// The cast animation is optional and guarded, so this works before you have drawn one.
-public class RangedAttack : MonoBehaviour
+public class RangedAttack : NetworkBehaviour
 {
     public AimInput aim;
     public AimPivot pivot;
@@ -36,6 +37,7 @@ public class RangedAttack : MonoBehaviour
 
     void Update()
     {
+        if (!IsOwner) return;
         if (aim == null || projectilePrefab == null) return;
 
         bool wants = automatic ? (aim.FireHeld || aim.FirePressed) : aim.FirePressed;
@@ -48,6 +50,9 @@ public class RangedAttack : MonoBehaviour
     {
         nextShotTime = Time.time + 1f / Mathf.Max(fireRate, 0.01f);
 
+        // NOT NETWORKED YET: this projectile is local-only, so other players cannot
+        // see your shots. That is fine for the movement spike - it becomes an
+        // Rpc(SendTo.Server) spawn once players are confirmed moving.
         Transform spawn = (pivot != null && pivot.muzzle != null) ? pivot.muzzle : transform;
         Projectile shot = Instantiate(projectilePrefab, spawn.position, Quaternion.identity);
         shot.Launch(aim.AimDirection, body != null ? body.sortingOrder : 0);
