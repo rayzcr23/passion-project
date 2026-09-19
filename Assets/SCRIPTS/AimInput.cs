@@ -27,11 +27,12 @@ public class AimInput : NetworkBehaviour
 
     Camera cam;
     int activeTouchId = -1;
+    bool warnedNoCamera;
 
     void Awake()
     {
         if (aimOrigin == null) aimOrigin = transform;
-        cam = Camera.main;
+        cam = ResolveCamera();
 
         // On iOS every touch ALSO arrives as a fake mouse click, which would fire
         // each shot twice. Turn that off so the two paths stay separate.
@@ -44,7 +45,7 @@ public class AimInput : NetworkBehaviour
         // Without this, one person's keyboard would drive everybody's character.
         if (!IsOwner) return;
 
-        if (cam == null) cam = Camera.main;
+        if (cam == null) cam = ResolveCamera();
         FirePressed = false;
 
         if (Input.touchCount > 0) ReadTouch();
@@ -98,6 +99,25 @@ public class AimInput : NetworkBehaviour
         PointAt(Input.mousePosition);                            // hover aims, no click needed
         if (Input.GetMouseButtonDown(0)) FirePressed = true;
         FireHeld = mouseHoldToFire && Input.GetMouseButton(0);
+    }
+
+    /// Camera.main matches on the MainCamera TAG, not the name. An untagged camera
+    /// leaves aiming stuck at Vector2.right, which is silent and baffling - so fall
+    /// back to any camera and warn once.
+    Camera ResolveCamera()
+    {
+        Camera found = Camera.main;
+        if (found != null) return found;
+
+        found = FindFirstObjectByType<Camera>();
+
+        if (found != null && !warnedNoCamera)
+        {
+            warnedNoCamera = true;
+            Debug.LogWarning("[Wanderers] No camera tagged 'MainCamera'. Falling back to '" +
+                             found.name + "'. Tag it MainCamera to silence this.", found);
+        }
+        return found;
     }
 
     void PointAt(Vector2 screenPos)

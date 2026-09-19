@@ -3,6 +3,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// Wires the gameplay pieces that would otherwise be a long Inspector session:
@@ -33,6 +34,7 @@ public static class ProjectSetupBuilder
         SetupPlayer(enemyLayer, playerLayer);
         SetupGoblin(enemyLayer);
         CleanNetworkPrefabs();
+        FixSceneCamera();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -64,6 +66,32 @@ public static class ProjectSetupBuilder
             }
         }
         return -1;
+    }
+
+    /// Camera.main resolves by TAG. An untagged camera silently pins AimInput to
+    /// Vector2.right, so every attack fires east regardless of where you point.
+    static void FixSceneCamera()
+    {
+        Camera cam = Object.FindFirstObjectByType<Camera>();
+        if (cam == null) { Debug.LogWarning("[Wanderers] No camera in the open scene"); return; }
+
+        bool changed = false;
+
+        if (!cam.CompareTag("MainCamera"))
+        {
+            cam.gameObject.tag = "MainCamera";
+            changed = true;
+            Debug.Log("[Wanderers] Tagged '" + cam.name + "' as MainCamera");
+        }
+
+        if (cam.GetComponent<CameraFollow>() == null)
+        {
+            cam.gameObject.AddComponent<CameraFollow>();
+            changed = true;
+            Debug.Log("[Wanderers] Added CameraFollow to '" + cam.name + "'");
+        }
+
+        if (changed) EditorSceneManager.MarkSceneDirty(cam.gameObject.scene);
     }
 
     /// Deleting a prefab leaves a null entry behind in the auto-populated list,

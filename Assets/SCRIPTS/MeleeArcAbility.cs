@@ -81,7 +81,11 @@ public class MeleeArcAbility : Ability
     void OnDrawGizmosSelected()
     {
         Transform t = origin != null ? origin : transform;
-        Vector3 facing = Application.isPlaying ? (Vector3)Vector2.right : t.right;
+
+        AimInput aimInput = GetComponent<AimInput>();
+        Vector3 facing = (aimInput != null && aimInput.HasAim)
+            ? (Vector3)aimInput.AimDirection
+            : Vector3.right;
 
         Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.35f);
         Gizmos.DrawWireSphere(t.position, range);
