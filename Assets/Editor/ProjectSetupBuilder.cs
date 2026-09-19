@@ -226,6 +226,7 @@ public static class ProjectSetupBuilder
         {
             move.aim = aim;
             move.death = death;
+            move.faceAimAlways = false;   // face where you walk; attacks still aim at the cursor
             if (move.body == null) move.body = root.GetComponent<SpriteRenderer>();
         }
 

@@ -20,6 +20,10 @@ public class AimInput : NetworkBehaviour
     [Header("Desktop")]
     public bool mouseHoldToFire = true;
 
+    [Tooltip("World-space distance the pointer must be from the character before it " +
+         "steers aim. Stops the direction thrashing when the cursor sits on you.")]
+    public float aimDeadzone = 0.35f;
+
     public Vector2 AimDirection { get; private set; } = Vector2.right;
     public bool FireHeld { get; private set; }
     public bool FirePressed { get; private set; }
@@ -127,8 +131,9 @@ public class AimInput : NetworkBehaviour
         Vector2 world = cam.ScreenToWorldPoint(screenPos);
         Vector2 delta = world - (Vector2)aimOrigin.position;
 
-        // Pointer sitting exactly on the pivot: keep the last good aim rather than snapping.
-        if (delta.sqrMagnitude < 0.0001f) return;
+        // Pointer sitting on the character: keep the last good aim rather than
+        // thrashing between directions from sub-pixel deltas.
+        if (delta.sqrMagnitude < aimDeadzone * aimDeadzone) return;
 
         AimDirection = delta.normalized;
         HasAim = true;

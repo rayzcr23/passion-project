@@ -9,7 +9,11 @@ public class Movement : NetworkBehaviour
     public SpriteRenderer body;
     public AimInput aim;                    // optional: face where you shoot, not where you walk
     public PlayerDeath death;               // optional: set automatically if present
-    public bool faceAimAlways = true;       // false: only turn to the aim while actually firing
+    [Tooltip("On: body tracks the cursor constantly (twin-stick feel). Off: body " +
+         "follows movement and only turns to the aim while attacking. Off is right " +
+         "for keyboard movement - the camera lags behind you as you walk, so a " +
+         "stationary cursor sits behind you and you would walk backwards.")]
+    public bool faceAimAlways = false;
     public int facingDirection = 1;
 
     void Awake()

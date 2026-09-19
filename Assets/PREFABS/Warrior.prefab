@@ -394,6 +394,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   aim: {fileID: 8900254977945951902}
   death: {fileID: 9026735657481644388}
+  movement: {fileID: 0}
   m1: {fileID: 9105195392067317132}
   special: {fileID: 0}
   super: {fileID: 0}
