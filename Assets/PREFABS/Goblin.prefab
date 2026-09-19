@@ -19,6 +19,8 @@ GameObject:
   - component: {fileID: 3810345769498430974}
   - component: {fileID: 5635219322313204071}
   - component: {fileID: 5562602294758888245}
+  - component: {fileID: 7885377993398203326}
+  - component: {fileID: 859461522356837123}
   m_Layer: 8
   m_Name: Goblin
   m_TagString: Untagged
@@ -316,6 +318,8 @@ MonoBehaviour:
   moveSpeed: 2
   damage: 5
   attackCooldown: 1.2
+  knockback: 3.5
+  hitstunSeconds: 0.25
 --- !u!114 &5562602294758888245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,3 +341,38 @@ MonoBehaviour:
   backColor: {r: 0.08, g: 0.08, b: 0.1, a: 0.85}
   hideWhenFull: 1
   lowThreshold: 0.3
+--- !u!114 &7885377993398203326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8408806140243515426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 659536a346dde634a8e5ba1b671e5fd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  recoverSeconds: 0.15
+--- !u!114 &859461522356837123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8408806140243515426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a839164c335360a44803359e7d2d7037, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: {fileID: 3810345769498430974}
+  sprite: {fileID: 0}
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashSeconds: 0.12
+  flashCount: 2
+  punchScale: 1
+  punchAmount: 0.18
+  punchSeconds: 0.12
+  cameraShakeOnDamage: 0

@@ -128,7 +128,9 @@ public class AimInput : NetworkBehaviour
     {
         if (cam == null) return;
 
-        Vector2 world = cam.ScreenToWorldPoint(screenPos);
+        float zDepth = Mathf.Abs(cam.transform.position.z - aimOrigin.position.z);
+        Vector3 screenPos3 = new Vector3(screenPos.x, screenPos.y, zDepth);
+        Vector2 world = cam.ScreenToWorldPoint(screenPos3);
         Vector2 delta = world - (Vector2)aimOrigin.position;
 
         // Pointer sitting on the character: keep the last good aim rather than

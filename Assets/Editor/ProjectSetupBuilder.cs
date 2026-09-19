@@ -91,6 +91,14 @@ public static class ProjectSetupBuilder
             Debug.Log("[Wanderers] Added CameraFollow to '" + cam.name + "'");
         }
 
+        if (!cam.orthographic)
+        {
+            cam.orthographic = true;
+            cam.orthographicSize = 5f;
+            changed = true;
+            Debug.Log("[Wanderers] Set camera '" + cam.name + "' to orthographic (size 5)");
+        }
+
         if (changed) EditorSceneManager.MarkSceneDirty(cam.gameObject.scene);
     }
 
@@ -212,6 +220,11 @@ public static class ProjectSetupBuilder
         death.respawnSeconds = 5f;
         death.respawnAtStart = true;
 
+        Rigidbody2D playerRb = Ensure<Rigidbody2D>(root);
+        playerRb.gravityScale = 0f;
+        playerRb.freezeRotation = true;
+        playerRb.linearDamping = 4f;
+
         KnockbackReceiver recoil = Ensure<KnockbackReceiver>(root);
         recoil.recoverSeconds = 0.2f;
 
@@ -312,6 +325,7 @@ public static class ProjectSetupBuilder
         brain.moveSpeed = 2f;
         brain.damage = 5;
         brain.attackCooldown = 1.2f;
+        brain.knockback = 3.5f;
     }
 
     static void ConfigureEnemyBar(HealthBar bar, Health hp)

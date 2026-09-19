@@ -86,10 +86,12 @@ public class MeleeArcAbility : Ability
             float theirExtent = Mathf.Max(col.bounds.extents.x, col.bounds.extents.y);
             float contactDistance = Mathf.Max(pointBlankRadius, theirExtent + ownExtent + 0.35f);
 
-            // Angle resolution degrades as distance approaches zero, so relax toward
-            // a forward hemisphere at contact rather than demanding the narrow cone.
+            // Angle resolution degrades as distance approaches zero, and touching
+            // colliders slide around each other's curves, so relax toward a wide
+            // forward/flank arc (135 deg) at contact rather than rejecting targets
+            // on your shoulder. Only the rear 90 deg wedge strictly behind you is spared.
             float acceptHalfArc = distance <= contactDistance
-                ? Mathf.Max(halfArc, 90f)
+                ? Mathf.Max(halfArc, 135f)
                 : halfArc;
 
             if (distance > 0.001f &&

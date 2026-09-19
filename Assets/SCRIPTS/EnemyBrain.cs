@@ -34,6 +34,7 @@ public class EnemyBrain : NetworkBehaviour
     float nextAttackTime;
     float hitstunUntil;
     int lastKnownHealth = -1;
+    KnockbackReceiver knockbackReceiver;
 
     void Awake()
     {
@@ -41,6 +42,7 @@ public class EnemyBrain : NetworkBehaviour
         health = GetComponent<Health>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        knockbackReceiver = GetComponent<KnockbackReceiver>();
     }
 
     public override void OnNetworkSpawn()
@@ -81,8 +83,8 @@ public class EnemyBrain : NetworkBehaviour
             return;
         }
 
-        // Reeling from a hit: leave the rigidbody alone so knockback actually moves it.
-        if (Time.time < hitstunUntil)
+        // Reeling from a hit or knockback: leave the rigidbody alone so knockback actually moves it.
+        if (Time.time < hitstunUntil || (knockbackReceiver != null && knockbackReceiver.IsRecovering))
         {
             SetSpeed(0f);
             return;
