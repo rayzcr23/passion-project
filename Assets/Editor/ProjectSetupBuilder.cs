@@ -32,6 +32,7 @@ public static class ProjectSetupBuilder
 
         SetupPlayer(enemyLayer, playerLayer);
         SetupGoblin(enemyLayer);
+        CleanNetworkPrefabs();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -63,6 +64,67 @@ public static class ProjectSetupBuilder
             }
         }
         return -1;
+    }
+
+    /// Deleting a prefab leaves a null entry behind in the auto-populated list,
+    /// which NGO complains about on startup.
+    static void CleanNetworkPrefabs()
+    {
+        var asset = AssetDatabase.LoadAssetAtPath<Object>("Assets/DefaultNetworkPrefabs.asset");
+        if (asset == null) return;
+
+        var so = new SerializedObject(asset);
+        SerializedProperty list = so.FindProperty("List");
+        if (list == null || !list.isArray) return;
+
+        int removed = 0;
+        for (int i = list.arraySize - 1; i >= 0; i--)
+        {
+            SerializedProperty prefab = list.GetArrayElementAtIndex(i).FindPropertyRelative("Prefab");
+            if (prefab != null && prefab.objectReferenceValue == null)
+            {
+                list.DeleteArrayElementAtIndex(i);
+                removed++;
+            }
+        }
+
+        if (removed > 0)
+        {
+            so.ApplyModifiedProperties();
+            Debug.Log("[Wanderers] Removed " + removed + " dead network prefab entries");
+        }
+    }
+
+    /// Drops a configured enemy camp wherever the Scene view is looking.
+    [MenuItem("Tools/Wanderers/Add Enemy Camp Here")]
+    public static void AddEnemyCamp()
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(EnemyPrefab);
+        if (prefab == null)
+        {
+            Debug.LogError("[Wanderers] No Goblin prefab yet - run Wire Up Gameplay first.");
+            return;
+        }
+
+        Vector3 position = Vector3.zero;
+        if (SceneView.lastActiveSceneView != null) position = SceneView.lastActiveSceneView.pivot;
+        position.z = 0f;
+
+        var go = new GameObject("EnemyCamp");
+        go.transform.position = position;
+
+        var spawner = go.AddComponent<EnemySpawner>();
+        spawner.enemyPrefab = prefab;
+        spawner.maxAlive = 4;
+        spawner.spawnInterval = 4f;
+        spawner.spawnRadius = 3f;
+        spawner.activationRange = 18f;
+
+        Undo.RegisterCreatedObjectUndo(go, "Add Enemy Camp");
+        Selection.activeGameObject = go;
+        SceneView.lastActiveSceneView?.FrameSelected();
+
+        Debug.Log("[Wanderers] Enemy camp added at " + position);
     }
 
     // ---------------------------------------------------------------- player
