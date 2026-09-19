@@ -9,6 +9,7 @@ public class Movement : NetworkBehaviour
     public SpriteRenderer body;
     public AimInput aim;                    // optional: face where you shoot, not where you walk
     public PlayerDeath death;               // optional: set automatically if present
+    public KnockbackReceiver knockback;     // optional: set automatically if present
     [Tooltip("On: body tracks the cursor constantly (twin-stick feel). Off: body " +
          "follows movement and only turns to the aim while attacking. Off is right " +
          "for keyboard movement - the camera lags behind you as you walk, so a " +
@@ -21,6 +22,7 @@ public class Movement : NetworkBehaviour
         if (body == null) body = GetComponent<SpriteRenderer>();
         if (aim == null) aim = GetComponent<AimInput>();
         if (death == null) death = GetComponent<PlayerDeath>();
+        if (knockback == null) knockback = GetComponent<KnockbackReceiver>();
     }
 
     public override void OnNetworkSpawn()
@@ -37,6 +39,15 @@ public class Movement : NetworkBehaviour
         if (death != null && death.IsDead)
         {
             rb.linearVelocity = Vector2.zero;
+            anim.SetFloat("Horizontal", 0f);
+            anim.SetFloat("Vertical", 0f);
+            return;
+        }
+
+        // Being knocked back: let physics carry you instead of assigning velocity,
+        // which would cancel the impulse on the very next step.
+        if (knockback != null && knockback.IsRecovering)
+        {
             anim.SetFloat("Horizontal", 0f);
             anim.SetFloat("Vertical", 0f);
             return;

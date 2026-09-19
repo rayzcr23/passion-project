@@ -17,6 +17,7 @@ public class EnemyBrain : NetworkBehaviour
     [Header("Attack")]
     public int damage = 5;
     public float attackCooldown = 1.2f;
+    public float knockback = 3.5f;
 
     [Header("Reaction")]
     [Tooltip("Pause after taking a hit. Without this the brain zeroes velocity every " +
@@ -126,6 +127,12 @@ public class EnemyBrain : NetworkBehaviour
 
             if (anim != null) anim.SetTrigger("Attack");
             target.ServerTakeDamage(damage, OwnerClientId);
+
+            if (knockback > 0f)
+            {
+                var receiver = target.GetComponent<KnockbackReceiver>();
+                if (receiver != null) receiver.ServerApply(toTarget.normalized, knockback);
+            }
         }
     }
 

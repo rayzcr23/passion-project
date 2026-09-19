@@ -51,6 +51,11 @@ public class MeleeArcAbility : Ability
         float halfArc = arcDegrees * 0.5f;
         int hits = 0;
 
+        Collider2D ownCollider = GetComponent<Collider2D>();
+        float ownExtent = ownCollider != null
+            ? Mathf.Max(ownCollider.bounds.extents.x, ownCollider.bounds.extents.y)
+            : 0.3f;
+
         foreach (Collider2D col in candidates)
         {
             if (hits >= maxTargets) break;
@@ -75,9 +80,15 @@ public class MeleeArcAbility : Ability
             Vector2 toTarget = (Vector2)col.bounds.center - centre;
             float distance = toTarget.magnitude;
 
+            // Contact distance is derived from the two colliders, not just the
+            // serialized radius: an enemy parked at its own attack range must always
+            // count as contact, whatever pointBlankRadius happens to be saved as.
+            float theirExtent = Mathf.Max(col.bounds.extents.x, col.bounds.extents.y);
+            float contactDistance = Mathf.Max(pointBlankRadius, theirExtent + ownExtent + 0.35f);
+
             // Angle resolution degrades as distance approaches zero, so relax toward
             // a forward hemisphere at contact rather than demanding the narrow cone.
-            float acceptHalfArc = distance <= pointBlankRadius
+            float acceptHalfArc = distance <= contactDistance
                 ? Mathf.Max(halfArc, 90f)
                 : halfArc;
 
@@ -88,13 +99,20 @@ public class MeleeArcAbility : Ability
 
             if (knockback > 0f)
             {
-                var rb = target.GetComponent<Rigidbody2D>();
-                if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic)
+                // Push away from the attacker rather than along the aim, so a
+                // target off to one side is knocked outward, not sideways.
+                Vector2 away = distance > 0.001f ? toTarget / distance : aimDirection;
+
+                var receiver = target.GetComponent<KnockbackReceiver>();
+                if (receiver != null)
                 {
-                    // Push away from the attacker rather than along the aim, so a
-                    // target off to one side is knocked outward, not sideways.
-                    Vector2 away = distance > 0.001f ? toTarget / distance : aimDirection;
-                    rb.AddForce(away * knockback, ForceMode2D.Impulse);
+                    receiver.ServerApply(away, knockback);
+                }
+                else
+                {
+                    var rb = target.GetComponent<Rigidbody2D>();
+                    if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic)
+                        rb.AddForce(away * knockback, ForceMode2D.Impulse);
                 }
             }
 

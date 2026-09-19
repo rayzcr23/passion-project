@@ -212,6 +212,9 @@ public static class ProjectSetupBuilder
         death.respawnSeconds = 5f;
         death.respawnAtStart = true;
 
+        KnockbackReceiver recoil = Ensure<KnockbackReceiver>(root);
+        recoil.recoverSeconds = 0.2f;
+
         DamageFlash flash = Ensure<DamageFlash>(root);
         flash.health = health;
         flash.cameraShakeOnDamage = 0.4f;                 // getting hit shakes your view
@@ -233,6 +236,7 @@ public static class ProjectSetupBuilder
             move.aim = aim;
             move.death = death;
             move.faceAimAlways = false;   // face where you walk; attacks still aim at the cursor
+            move.knockback = recoil;
             if (move.body == null) move.body = root.GetComponent<SpriteRenderer>();
         }
 
@@ -286,6 +290,8 @@ public static class ProjectSetupBuilder
 
         ConfigureBrain(Ensure<EnemyBrain>(go));
         ConfigureEnemyBar(Ensure<HealthBar>(go), hp);
+
+        Ensure<KnockbackReceiver>(go).recoverSeconds = 0.15f;
 
         DamageFlash enemyFlash = Ensure<DamageFlash>(go);
         enemyFlash.health = hp;
