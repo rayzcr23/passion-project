@@ -77,6 +77,23 @@ public static class ProjectSetupBuilder
         var animator = root.GetComponent<Animator>();
         if (controller != null && animator != null) animator.runtimeAnimatorController = controller;
 
+        // NetworkAnimator ships with its Animator reference empty, which null-refs
+        // every frame in CheckParametersChanged. Owner authority to match
+        // NetworkTransform, since Movement drives the parameters on the owner.
+        var netAnimator = root.GetComponent<NetworkAnimator>();
+        if (netAnimator != null && animator != null)
+        {
+            var so = new SerializedObject(netAnimator);
+
+            SerializedProperty animProp = so.FindProperty("m_Animator");
+            if (animProp != null) animProp.objectReferenceValue = animator;
+
+            SerializedProperty authProp = so.FindProperty("AuthorityMode");
+            if (authProp != null) authProp.enumValueIndex = 1;   // Owner
+
+            so.ApplyModifiedProperties();
+        }
+
         AimInput aim = Ensure<AimInput>(root);
         aim.aimOrigin = root.transform;
 
