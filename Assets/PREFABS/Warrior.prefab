@@ -198,7 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3052972476
+  GlobalObjectIdHash: 1830844667
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -232,7 +232,7 @@ MonoBehaviour:
   body: {fileID: 6140671998413990239}
   aim: {fileID: 8900254977945951902}
   death: {fileID: 9026735657481644388}
-  faceAimAlways: 1
+  faceAimAlways: 0
   facingDirection: 1
 --- !u!114 &8053190018001894926
 MonoBehaviour:
@@ -337,6 +337,7 @@ MonoBehaviour:
   aimZoneLeftEdge: 0
   touchHoldToFire: 1
   mouseHoldToFire: 1
+  aimDeadzone: 0.35
 --- !u!114 &792121753185170704
 MonoBehaviour:
   m_ObjectHideFlags: 0

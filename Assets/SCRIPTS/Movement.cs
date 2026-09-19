@@ -52,10 +52,10 @@ public class Movement : NetworkBehaviour
 
         rb.linearVelocity = input * speed;
 
-        // Aim wins over movement: a wizard backing away left while shooting right faces right.
-        // On desktop the cursor always has a position, so faceAimAlways decides whether the
-        // body tracks it constantly or only mid-shot.
-        bool useAim = aim != null && aim.HasAim && (faceAimAlways || aim.FireHeld || aim.FirePressed);
+        // Facing follows movement. The pointer is consulted ONLY when faceAimAlways
+        // is deliberately switched on - attacking must never yank the body around,
+        // which read as a twitch toward the cursor on every swing.
+        bool useAim = faceAimAlways && aim != null && aim.HasAim;
         float face = useAim ? aim.AimDirection.x : input.x;
         if (face > 0.01f) SetFacing(1);
         else if (face < -0.01f) SetFacing(-1);
