@@ -203,7 +203,7 @@ public static class ProjectSetupBuilder
         swing.damage = 10;
         swing.windupSeconds = 0.15f;
         swing.pointBlankRadius = 1.0f;   // must exceed the goblin's 0.9 attack range
-        swing.knockback = 2f;
+        swing.knockback = 4.5f;                           // punchier now that hitstun lets it read
         swing.friendlyFire = true;                        // brothers can duel
         // Both layers, or the swing would pass straight through other players.
         swing.hitLayers = (1 << enemyLayer) | (1 << playerLayer);
@@ -211,6 +211,11 @@ public static class ProjectSetupBuilder
         PlayerDeath death = Ensure<PlayerDeath>(root);
         death.respawnSeconds = 5f;
         death.respawnAtStart = true;
+
+        DamageFlash flash = Ensure<DamageFlash>(root);
+        flash.health = health;
+        flash.cameraShakeOnDamage = 0.4f;                 // getting hit shakes your view
+        flash.flashColor = new Color(1f, 0.35f, 0.35f);
 
         HealthBar bar = Ensure<HealthBar>(root);
         bar.health = health;
@@ -281,6 +286,11 @@ public static class ProjectSetupBuilder
 
         ConfigureBrain(Ensure<EnemyBrain>(go));
         ConfigureEnemyBar(Ensure<HealthBar>(go), hp);
+
+        DamageFlash enemyFlash = Ensure<DamageFlash>(go);
+        enemyFlash.health = hp;
+        enemyFlash.cameraShakeOnDamage = 0f;              // enemies never shake your camera
+        enemyFlash.flashColor = Color.white;              // reads well on the red goblin
 
         PrefabUtility.SaveAsPrefabAsset(go, EnemyPrefab);
 

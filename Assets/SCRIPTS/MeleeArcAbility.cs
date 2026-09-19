@@ -90,11 +90,26 @@ public class MeleeArcAbility : Ability
             {
                 var rb = target.GetComponent<Rigidbody2D>();
                 if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic)
-                    rb.AddForce(aimDirection.normalized * knockback, ForceMode2D.Impulse);
+                {
+                    // Push away from the attacker rather than along the aim, so a
+                    // target off to one side is knocked outward, not sideways.
+                    Vector2 away = distance > 0.001f ? toTarget / distance : aimDirection;
+                    rb.AddForce(away * knockback, ForceMode2D.Impulse);
+                }
             }
 
             hits++;
         }
+
+        if (hits > 0) ConnectedRpc(hits);
+    }
+
+    /// Only the attacker feels the hit. Everyone else seeing your screen shake
+    /// would be noise, and the flash already tells them the target was struck.
+    [Rpc(SendTo.Owner)]
+    void ConnectedRpc(int targetsHit)
+    {
+        CameraFollow.Shake(Mathf.Min(0.22f + 0.06f * (targetsHit - 1), 0.5f));
     }
 
     // Draws the wedge in the Scene view so the range and angle can be tuned by eye.
