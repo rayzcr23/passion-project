@@ -24,6 +24,13 @@ public class AimInput : NetworkBehaviour
          "steers aim. Stops the direction thrashing when the cursor sits on you.")]
     public float aimDeadzone = 0.35f;
 
+    [Tooltip("Draws the live aim direction in the Scene view (magenta) every frame, " +
+         "and the raw pointer world position (yellow). If the magenta ray points " +
+         "vertically while you aim sideways, the fault is here, not in the swing.")]
+    public bool debugDrawAim = false;
+
+    Vector2 lastPointerWorld;
+
     public Vector2 AimDirection { get; private set; } = Vector2.right;
     public bool FireHeld { get; private set; }
     public bool FirePressed { get; private set; }
@@ -54,6 +61,12 @@ public class AimInput : NetworkBehaviour
 
         if (Input.touchCount > 0) ReadTouch();
         else ReadMouse();
+
+        if (debugDrawAim && HasAim && aimOrigin != null)
+        {
+            Debug.DrawRay(aimOrigin.position, (Vector3)(AimDirection * 2f), Color.magenta);
+            Debug.DrawLine(aimOrigin.position, (Vector3)lastPointerWorld, Color.yellow);
+        }
     }
 
     void ReadTouch()
@@ -140,5 +153,6 @@ public class AimInput : NetworkBehaviour
 
         AimDirection = delta.normalized;
         HasAim = true;
+        lastPointerWorld = world;
     }
 }

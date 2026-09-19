@@ -228,6 +228,7 @@ public static class ProjectSetupBuilder
 
         AimInput aim = Ensure<AimInput>(root);
         aim.aimOrigin = root.transform;
+        aim.debugDrawAim = true;          // magenta ray = live aim direction
 
         Health health = Ensure<Health>(root);
         health.maxHealth = 100;
@@ -243,6 +244,8 @@ public static class ProjectSetupBuilder
         swing.damage = 10;
         swing.windupSeconds = 0.15f;
         swing.pointBlankRadius = 1.0f;   // must exceed the goblin's 0.9 attack range
+        swing.debugDraw = true;
+        swing.debugLog = true;
         swing.knockback = 4.5f;                           // punchier now that hitstun lets it read
         swing.friendlyFire = true;                        // brothers can duel
         // Both layers, or the swing would pass straight through other players.
