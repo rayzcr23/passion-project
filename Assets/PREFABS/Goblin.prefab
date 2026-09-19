@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 5562602294758888245}
   - component: {fileID: 7885377993398203326}
   - component: {fileID: 859461522356837123}
+  - component: {fileID: 9022851374757612504}
   m_Layer: 8
   m_Name: Goblin
   m_TagString: Untagged
@@ -299,6 +300,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
   despawnOnDeath: 1
+  despawnDelay: 0.6
 --- !u!114 &5635219322313204071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -376,3 +378,23 @@ MonoBehaviour:
   punchAmount: 0.18
   punchSeconds: 0.12
   cameraShakeOnDamage: 0
+--- !u!114 &9022851374757612504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8408806140243515426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16bf56475e89d604a8d41ff31485eae0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectPrefab: {fileID: 0}
+  effectOffset: {x: 0, y: 0, z: 0}
+  effectScale: 0.7
+  sprite: {fileID: 0}
+  fadeSeconds: 0.45
+  shrinkTo: 0.55
+  spinDegrees: 25
+  disablePhysicsOnDeath: 1

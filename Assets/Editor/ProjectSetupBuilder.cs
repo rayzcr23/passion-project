@@ -36,6 +36,7 @@ public static class ProjectSetupBuilder
         SetupGoblin(enemyLayer);
         CleanNetworkPrefabs();
         FixSceneCamera();
+        FixSessionHud();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -101,6 +102,23 @@ public static class ProjectSetupBuilder
         }
 
         if (changed) EditorSceneManager.MarkSceneDirty(cam.gameObject.scene);
+    }
+
+    /// Relay lets players on other devices actually connect; NetworkHUD only ever
+    /// reaches 127.0.0.1.
+    static void FixSessionHud()
+    {
+        NetworkManager nm = Object.FindFirstObjectByType<NetworkManager>();
+        if (nm == null) { Debug.LogWarning("[Wanderers] No NetworkManager in the open scene"); return; }
+
+        if (nm.GetComponent<SessionHUD>() != null) return;
+
+        SessionHUD hud = nm.gameObject.AddComponent<SessionHUD>();
+        hud.maxPlayers = 3;
+        hud.localHud = nm.GetComponent<NetworkHUD>();
+
+        EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
+        Debug.Log("[Wanderers] Added SessionHUD for online play");
     }
 
     /// Deleting a prefab leaves a null entry behind in the auto-populated list,
