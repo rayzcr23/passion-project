@@ -77,6 +77,10 @@ public class PlayerDeath : NetworkBehaviour
     {
         transform.position = position;
         if (rb != null) rb.linearVelocity = Vector2.zero;
+
+        // Dying on the plateau never walks you back through an exit trigger, so the
+        // cliffs would stay disabled. Collider state is per-client, hence owner-side.
+        ElevationReset.ToGround();
     }
 
     [Rpc(SendTo.ClientsAndHost)]

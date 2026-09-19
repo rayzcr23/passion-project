@@ -80,25 +80,23 @@ public class DamageFlash : MonoBehaviour
 
     IEnumerator FlashRoutine()
     {
-        // PlayerDeath fades the sprite alpha, so re-read the base each time
-        // rather than restoring a stale colour over it.
+        // Take only the RGB. Alpha belongs to PlayerDeath: a killing blow starts
+        // this flash at full alpha, PlayerDeath then fades to 0.35, and restoring
+        // a captured colour here would undo the fade a moment later.
         baseColor = sprite.color;
 
         if (punchScale) StartCoroutine(PunchRoutine());
 
         for (int i = 0; i < Mathf.Max(1, flashCount); i++)
         {
-            Color flash = flashColor;
-            flash.a = baseColor.a;          // keep whatever alpha death set
-            sprite.color = flash;
-
+            SetRgb(flashColor);
             yield return new WaitForSeconds(flashSeconds / (flashCount * 2f));
 
-            sprite.color = baseColor;
+            SetRgb(baseColor);
             yield return new WaitForSeconds(flashSeconds / (flashCount * 2f));
         }
 
-        sprite.color = baseColor;
+        SetRgb(baseColor);
         running = null;
     }
 
@@ -119,9 +117,16 @@ public class DamageFlash : MonoBehaviour
         transform.localScale = baseScale;
     }
 
+    /// Writes colour while leaving whatever alpha is currently set intact.
+    void SetRgb(Color rgb)
+    {
+        if (sprite == null) return;
+        sprite.color = new Color(rgb.r, rgb.g, rgb.b, sprite.color.a);
+    }
+
     void Restore()
     {
-        if (sprite != null) sprite.color = baseColor;
+        SetRgb(baseColor);
         transform.localScale = baseScale;
     }
 }
