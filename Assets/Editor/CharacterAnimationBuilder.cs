@@ -3,9 +3,9 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-/// One-click setup for the three player classes: slices the Tiny Swords sheets,
-/// builds Idle/Run/Attack clips, and wires a shared controller plus one
-/// Animator Override Controller per class.
+/// One-click setup for the player character. All three players are swordsman
+/// brothers, so there is a single class - which means the animation budget goes
+/// into depth (two attacks and a guard) rather than three shallow kits.
 ///
 /// Lives in Assets/Editor so it is stripped from player builds.
 public static class CharacterAnimationBuilder
@@ -17,72 +17,53 @@ public static class CharacterAnimationBuilder
 
     class ClipDef
     {
-        public string name;       // clip suffix: Idle / Run / Attack
+        public string name;       // clip suffix
         public string sheet;      // path under UnitsRoot
         public bool loop;
         public ClipDef(string n, string s, bool l) { name = n; sheet = s; loop = l; }
     }
 
-    static readonly Dictionary<string, ClipDef[]> Classes = new Dictionary<string, ClipDef[]>
+    // Git history has the three-class version (Wizard/Monk, Assassin/Archer) if
+    // the brothers ever need different fighting styles.
+    static readonly ClipDef[] Clips =
     {
-        { "Swordsman", new[] {
-            new ClipDef("Idle",   "Warrior/Warrior_Idle.png",    true),
-            new ClipDef("Run",    "Warrior/Warrior_Run.png",     true),
-            new ClipDef("Attack", "Warrior/Warrior_Attack1.png", false) } },
-
-        { "Wizard", new[] {
-            new ClipDef("Idle",   "Monk/Idle.png", true),
-            new ClipDef("Run",    "Monk/Run.png",  true),
-            new ClipDef("Attack", "Monk/Heal.png", false) } },
-
-        { "Assassin", new[] {
-            new ClipDef("Idle",   "Archer/Archer_Idle.png",  true),
-            new ClipDef("Run",    "Archer/Archer_Run.png",   true),
-            new ClipDef("Attack", "Archer/Archer_Shoot.png", false) } },
+        new ClipDef("Idle",    "Warrior/Warrior_Idle.png",    true),
+        new ClipDef("Run",     "Warrior/Warrior_Run.png",     true),
+        new ClipDef("Attack",  "Warrior/Warrior_Attack1.png", false),
+        new ClipDef("Attack2", "Warrior/Warrior_Attack2.png", false),
+        new ClipDef("Guard",   "Warrior/Warrior_Guard.png",   true),
     };
 
     [MenuItem("Tools/Wanderers/Build Character Animations")]
     public static void BuildAll()
     {
         EnsureFolder(OutRoot);
-
-        // 1. Slice every sheet the three classes need.
-        var sheets = new HashSet<string>();
-        foreach (var kv in Classes)
-            foreach (ClipDef c in kv.Value) sheets.Add(UnitsRoot + c.sheet);
+        EnsureFolder(OutRoot + "Swordsman");
 
         int sliced = 0;
-        foreach (string s in sheets) if (SliceSheet(s)) sliced++;
+        var seen = new HashSet<string>();
+        foreach (ClipDef c in Clips)
+            if (seen.Add(UnitsRoot + c.sheet) && SliceSheet(UnitsRoot + c.sheet)) sliced++;
 
         AssetDatabase.Refresh();
 
-        // 2. Build clips per class.
-        var built = new Dictionary<string, Dictionary<string, AnimationClip>>();
-        foreach (var kv in Classes)
+        var built = new Dictionary<string, AnimationClip>();
+        foreach (ClipDef def in Clips)
         {
-            EnsureFolder(OutRoot + kv.Key);
-            var clips = new Dictionary<string, AnimationClip>();
-
-            foreach (ClipDef def in kv.Value)
-            {
-                AnimationClip clip = BuildClip(UnitsRoot + def.sheet,
-                                               OutRoot + kv.Key + "/" + kv.Key + "_" + def.name + ".anim",
-                                               def.loop);
-                if (clip != null) clips[def.name] = clip;
-            }
-            built[kv.Key] = clips;
+            AnimationClip clip = BuildClip(UnitsRoot + def.sheet,
+                                           OutRoot + "Swordsman/Swordsman_" + def.name + ".anim",
+                                           def.loop);
+            if (clip != null) built[def.name] = clip;
         }
 
-        // 3. Shared controller (Swordsman clips act as the defaults), then overrides.
-        AnimatorController baseController = BuildBaseController(built["Swordsman"]);
-        foreach (var kv in built) BuildOverride(baseController, kv.Key, kv.Value);
+        BuildController(built);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
         Debug.Log(string.Format(
-            "[Wanderers] Sliced {0} sheets, built {1} clips, 1 base controller and {2} override controllers in {3}",
-            sliced, built.Count * 3, built.Count, OutRoot));
+            "[Wanderers] Sliced {0} sheets, built {1} clips and PlayerBase.controller in {2}",
+            sliced, built.Count, OutRoot));
     }
 
     static bool SliceSheet(string path)
@@ -170,7 +151,7 @@ public static class CharacterAnimationBuilder
         return (u >= 0 && int.TryParse(spriteName.Substring(u + 1), out n)) ? n : 0;
     }
 
-    static AnimatorController BuildBaseController(Dictionary<string, AnimationClip> clips)
+    static void BuildController(Dictionary<string, AnimationClip> clips)
     {
         string path = OutRoot + "PlayerBase.controller";
         AssetDatabase.DeleteAsset(path);
@@ -181,16 +162,22 @@ public static class CharacterAnimationBuilder
         c.AddParameter("Horizontal", AnimatorControllerParameterType.Float);
         c.AddParameter("Vertical", AnimatorControllerParameterType.Float);
         c.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
+        c.AddParameter("Attack2", AnimatorControllerParameterType.Trigger);
+        c.AddParameter("Guard", AnimatorControllerParameterType.Bool);
 
         AnimatorStateMachine sm = c.layers[0].stateMachine;
 
         AnimatorState idle = sm.AddState("Idle");
         AnimatorState run = sm.AddState("Run");
         AnimatorState attack = sm.AddState("Attack");
+        AnimatorState attack2 = sm.AddState("Attack2");
+        AnimatorState guard = sm.AddState("Guard");
 
         idle.motion = Get(clips, "Idle");
         run.motion = Get(clips, "Run");
         attack.motion = Get(clips, "Attack");
+        attack2.motion = Get(clips, "Attack2");
+        guard.motion = Get(clips, "Guard");
 
         sm.defaultState = idle;
 
@@ -204,18 +191,40 @@ public static class CharacterAnimationBuilder
         stop.AddCondition(AnimatorConditionMode.Less, 0.01f, "Horizontal");
         stop.AddCondition(AnimatorConditionMode.Less, 0.01f, "Vertical");
 
-        AnimatorStateTransition toAttack = sm.AddAnyStateTransition(attack);
-        toAttack.hasExitTime = false;
-        toAttack.duration = 0f;
-        toAttack.canTransitionToSelf = false;
-        toAttack.AddCondition(AnimatorConditionMode.If, 0f, "Attack");
+        AddTriggerEntry(sm, attack, "Attack");
+        AddTriggerEntry(sm, attack2, "Attack2");
 
-        AnimatorStateTransition done = attack.AddTransition(idle);
-        done.hasExitTime = true;
-        done.exitTime = 1f;
-        done.duration = 0f;
+        // Guard is held rather than fired, so it is a bool both ways.
+        AnimatorStateTransition toGuard = sm.AddAnyStateTransition(guard);
+        toGuard.hasExitTime = false;
+        toGuard.duration = 0f;
+        toGuard.canTransitionToSelf = false;
+        toGuard.AddCondition(AnimatorConditionMode.If, 0f, "Guard");
 
-        return c;
+        AnimatorStateTransition unguard = guard.AddTransition(idle);
+        unguard.hasExitTime = false;
+        unguard.duration = 0f;
+        unguard.AddCondition(AnimatorConditionMode.IfNot, 0f, "Guard");
+
+        ReturnToIdle(attack, idle);
+        ReturnToIdle(attack2, idle);
+    }
+
+    static void AddTriggerEntry(AnimatorStateMachine sm, AnimatorState state, string trigger)
+    {
+        AnimatorStateTransition t = sm.AddAnyStateTransition(state);
+        t.hasExitTime = false;
+        t.duration = 0f;
+        t.canTransitionToSelf = false;
+        t.AddCondition(AnimatorConditionMode.If, 0f, trigger);
+    }
+
+    static void ReturnToIdle(AnimatorState from, AnimatorState idle)
+    {
+        AnimatorStateTransition t = from.AddTransition(idle);
+        t.hasExitTime = true;
+        t.exitTime = 1f;
+        t.duration = 0f;
     }
 
     static void AddMoveTransition(AnimatorState from, AnimatorState to, string parameter)
@@ -224,34 +233,6 @@ public static class CharacterAnimationBuilder
         t.hasExitTime = false;
         t.duration = 0f;
         t.AddCondition(AnimatorConditionMode.Greater, 0.01f, parameter);
-    }
-
-    static void BuildOverride(AnimatorController baseController, string className,
-                              Dictionary<string, AnimationClip> clips)
-    {
-        var ovr = new AnimatorOverrideController(baseController);
-        ovr.name = className;
-
-        var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-        ovr.GetOverrides(pairs);
-
-        for (int i = 0; i < pairs.Count; i++)
-        {
-            string key = pairs[i].Key != null ? pairs[i].Key.name : "";
-            if (key.EndsWith("_Idle")) pairs[i] = Pair(pairs[i].Key, Get(clips, "Idle"));
-            else if (key.EndsWith("_Run")) pairs[i] = Pair(pairs[i].Key, Get(clips, "Run"));
-            else if (key.EndsWith("_Attack")) pairs[i] = Pair(pairs[i].Key, Get(clips, "Attack"));
-        }
-        ovr.ApplyOverrides(pairs);
-
-        string path = OutRoot + className + ".overrideController";
-        AssetDatabase.DeleteAsset(path);
-        AssetDatabase.CreateAsset(ovr, path);
-    }
-
-    static KeyValuePair<AnimationClip, AnimationClip> Pair(AnimationClip a, AnimationClip b)
-    {
-        return new KeyValuePair<AnimationClip, AnimationClip>(a, b);
     }
 
     static AnimationClip Get(Dictionary<string, AnimationClip> d, string k)
