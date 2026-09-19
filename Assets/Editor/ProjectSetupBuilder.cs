@@ -224,6 +224,8 @@ public static class ProjectSetupBuilder
             so.ApplyModifiedProperties();
         }
 
+        TrimNetworkTransform(root);
+
         AimInput aim = Ensure<AimInput>(root);
         aim.aimOrigin = root.transform;
 
@@ -294,6 +296,31 @@ public static class ProjectSetupBuilder
         PrefabUtility.UnloadPrefabContents(root);
     }
 
+    /// A 2D game has no business replicating Z position, any rotation, or scale.
+    /// Scale in particular is written every time DamageFlash punches, and rotation
+    /// every time DeathEffect tips a body over - both of which already run locally
+    /// on each client, so syncing them is pure waste.
+    static void TrimNetworkTransform(GameObject go)
+    {
+        var nt = go.GetComponent<NetworkTransform>();
+        if (nt == null) return;
+
+        var so = new SerializedObject(nt);
+        string[] off =
+        {
+            "SyncPositionZ",
+            "SyncRotAngleX", "SyncRotAngleY", "SyncRotAngleZ",
+            "SyncScaleX", "SyncScaleY", "SyncScaleZ"
+        };
+
+        foreach (string name in off)
+        {
+            SerializedProperty p = so.FindProperty(name);
+            if (p != null) p.boolValue = false;
+        }
+        so.ApplyModifiedProperties();
+    }
+
     // ------------------------------------------------------------ test dummy
 
     static void SetupGoblin(int enemyLayer)
@@ -351,6 +378,7 @@ public static class ProjectSetupBuilder
         ConfigureBrain(Ensure<EnemyBrain>(go));
         ConfigureEnemyBar(Ensure<HealthBar>(go), hp);
 
+        TrimNetworkTransform(go);
         Ensure<KnockbackReceiver>(go).recoverSeconds = 0.15f;
 
         DamageFlash enemyFlash = Ensure<DamageFlash>(go);

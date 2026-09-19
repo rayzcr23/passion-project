@@ -110,7 +110,8 @@ public class EnemyBrain : NetworkBehaviour
             return;
         }
 
-        faceLeft.Value = toTarget.x < 0f;
+        bool wantsLeft = toTarget.x < 0f;
+        if (faceLeft.Value != wantsLeft) faceLeft.Value = wantsLeft;
 
         if (distance > attackRange)
         {

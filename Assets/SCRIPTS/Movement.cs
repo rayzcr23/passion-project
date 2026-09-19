@@ -18,6 +18,10 @@ public class Movement : NetworkBehaviour
     public bool faceAimAlways = false;
     public int facingDirection = 1;
 
+    // flipX is not covered by NetworkTransform or NetworkAnimator, so without this
+    // every remote player permanently faces right.
+    readonly NetworkVariable<bool> facingLeft = new NetworkVariable<bool>();
+
     void Awake()
     {
         if (body == null) body = GetComponent<SpriteRenderer>();
@@ -29,6 +33,9 @@ public class Movement : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        facingLeft.OnValueChanged += (_, now) => ApplyFlip(now);
+        ApplyFlip(facingLeft.Value);
+
         // Remote copies are positioned by NetworkTransform, so their physics must not
         // fight it. Only the owner runs real dynamics.
         if (!IsOwner && rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
@@ -60,8 +67,11 @@ public class Movement : NetworkBehaviour
         // Diagonals used to come out ~41% faster than cardinals.
         if (input.sqrMagnitude > 1f) input.Normalize();
 
-        anim.SetFloat("Horizontal", Mathf.Abs(input.x));
-        anim.SetFloat("Vertical", Mathf.Abs(input.y));
+        // Quantised on purpose. GetAxis is smoothed, so raw magnitudes change every
+        // single tick, and NetworkAnimator then streams two float updates per tick
+        // per player. The controller only tests against 0.01, so 0/1 is all it needs.
+        anim.SetFloat("Horizontal", Mathf.Abs(input.x) > 0.1f ? 1f : 0f);
+        anim.SetFloat("Vertical", Mathf.Abs(input.y) > 0.1f ? 1f : 0f);
 
         float speedScale = (guard != null && guard.IsBlocking) ? guard.moveSpeedMultiplier : 1f;
         rb.linearVelocity = input * speed * speedScale;
@@ -78,10 +88,24 @@ public class Movement : NetworkBehaviour
     public void SetFacing(int direction)
     {
         facingDirection = direction;
+        ApplyFlip(direction < 0);
 
+        // Writing only on change keeps this off the wire while you walk in a line.
+        if (IsOwner && IsSpawned && facingLeft.Value != (direction < 0))
+            SetFacingRpc(direction < 0);
+    }
+
+    [Rpc(SendTo.Server)]
+    void SetFacingRpc(bool left)
+    {
+        facingLeft.Value = left;
+    }
+
+    void ApplyFlip(bool left)
+    {
         // Only the body sprite flips. Negating the root scale, as this used to do, would
         // also mirror the AimPivot child and invert every aim angle.
-        if (body != null) body.flipX = direction < 0;
+        if (body != null) body.flipX = left;
     }
 
     public void Flip()
