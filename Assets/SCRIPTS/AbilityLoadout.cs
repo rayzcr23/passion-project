@@ -8,6 +8,7 @@ public class AbilityLoadout : NetworkBehaviour
     public AimInput aim;
     public PlayerDeath death;
     public Movement movement;
+    public GuardAbility guard;
 
     [Header("Slots")]
     public Ability m1;
@@ -27,12 +28,14 @@ public class AbilityLoadout : NetworkBehaviour
         if (aim == null) aim = GetComponent<AimInput>();
         if (death == null) death = GetComponent<PlayerDeath>();
         if (movement == null) movement = GetComponent<Movement>();
+        if (guard == null) guard = GetComponent<GuardAbility>();
     }
 
     void Update()
     {
         if (!IsOwner || aim == null) return;
         if (death != null && death.IsDead) return;
+        if (guard != null && guard.IsBlocking) return;   // shield up, no attacking
 
         Vector2 facing = new Vector2(movement != null ? movement.facingDirection : 1, 0f);
 

@@ -239,10 +239,16 @@ public static class ProjectSetupBuilder
         bar.hideWhenFull = false;                         // always show your own
         bar.offset = new Vector3(0f, 0.95f, 0f);
 
+        GuardAbility guard = Ensure<GuardAbility>(root);
+        guard.useRightMouse = true;
+        guard.blockAllDirections = true;
+        guard.moveSpeedMultiplier = 0.35f;
+
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
         loadout.death = death;
+        loadout.guard = guard;
 
         Movement move = root.GetComponent<Movement>();
         if (move != null)
@@ -251,6 +257,7 @@ public static class ProjectSetupBuilder
             move.death = death;
             move.faceAimAlways = false;   // face where you walk; attacks still aim at the cursor
             move.knockback = recoil;
+            move.guard = guard;
             if (move.body == null) move.body = root.GetComponent<SpriteRenderer>();
         }
 

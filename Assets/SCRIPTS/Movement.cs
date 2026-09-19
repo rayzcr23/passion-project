@@ -10,6 +10,7 @@ public class Movement : NetworkBehaviour
     public AimInput aim;                    // optional: face where you shoot, not where you walk
     public PlayerDeath death;               // optional: set automatically if present
     public KnockbackReceiver knockback;     // optional: set automatically if present
+    public GuardAbility guard;              // optional: set automatically if present
     [Tooltip("On: body tracks the cursor constantly (twin-stick feel). Off: body " +
          "follows movement and only turns to the aim while attacking. Off is right " +
          "for keyboard movement - the camera lags behind you as you walk, so a " +
@@ -23,6 +24,7 @@ public class Movement : NetworkBehaviour
         if (aim == null) aim = GetComponent<AimInput>();
         if (death == null) death = GetComponent<PlayerDeath>();
         if (knockback == null) knockback = GetComponent<KnockbackReceiver>();
+        if (guard == null) guard = GetComponent<GuardAbility>();
     }
 
     public override void OnNetworkSpawn()
@@ -61,7 +63,8 @@ public class Movement : NetworkBehaviour
         anim.SetFloat("Horizontal", Mathf.Abs(input.x));
         anim.SetFloat("Vertical", Mathf.Abs(input.y));
 
-        rb.linearVelocity = input * speed;
+        float speedScale = (guard != null && guard.IsBlocking) ? guard.moveSpeedMultiplier : 1f;
+        rb.linearVelocity = input * speed * speedScale;
 
         // Facing follows movement. The pointer is consulted ONLY when faceAimAlways
         // is deliberately switched on - attacking must never yank the body around,

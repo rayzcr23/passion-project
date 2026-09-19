@@ -128,7 +128,7 @@ public class EnemyBrain : NetworkBehaviour
             nextAttackTime = Time.time + attackCooldown;
 
             if (anim != null) anim.SetTrigger("Attack");
-            target.ServerTakeDamage(damage, OwnerClientId);
+            target.ServerTakeDamage(damage, OwnerClientId, toTarget.normalized);
 
             if (knockback > 0f)
             {

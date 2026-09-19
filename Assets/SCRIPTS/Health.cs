@@ -16,6 +16,13 @@ public class Health : NetworkBehaviour
 
     readonly NetworkVariable<int> current = new NetworkVariable<int>();
 
+    GuardAbility guard;
+
+    void Awake()
+    {
+        guard = GetComponent<GuardAbility>();
+    }
+
     public int Current => current.Value;
     public int Max => maxHealth;
     public float Fraction => maxHealth <= 0 ? 0f : current.Value / (float)maxHealth;
@@ -47,7 +54,21 @@ public class Health : NetworkBehaviour
     /// Server only. Ignored elsewhere so a stray client call cannot deal damage.
     public void ServerTakeDamage(int amount, ulong attackerClientId)
     {
+        ServerTakeDamage(amount, attackerClientId, Vector2.zero);
+    }
+
+    /// fromDirection points from the attacker toward this target, for directional
+    /// blocking. Vector2.zero means "unknown", which an omnidirectional guard
+    /// still stops.
+    public void ServerTakeDamage(int amount, ulong attackerClientId, Vector2 fromDirection)
+    {
         if (!IsServer || IsDead || amount <= 0) return;
+
+        if (guard != null && guard.ServerBlocks(fromDirection))
+        {
+            guard.ServerNotifyBlocked();
+            return;                          // fully absorbed
+        }
 
         current.Value = Mathf.Max(0, current.Value - amount);
         if (current.Value == 0) ServerDie();
