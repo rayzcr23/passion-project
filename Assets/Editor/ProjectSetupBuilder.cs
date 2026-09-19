@@ -102,6 +102,11 @@ public static class ProjectSetupBuilder
         death.respawnSeconds = 5f;
         death.respawnAtStart = true;
 
+        HealthBar bar = Ensure<HealthBar>(root);
+        bar.health = health;
+        bar.hideWhenFull = false;                         // always show your own
+        bar.offset = new Vector3(0f, 0.95f, 0f);
+
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
@@ -129,6 +134,7 @@ public static class ProjectSetupBuilder
             GameObject loaded = PrefabUtility.LoadPrefabContents(EnemyPrefab);
             loaded.layer = enemyLayer;
             ConfigureBrain(Ensure<EnemyBrain>(loaded));
+            ConfigureEnemyBar(Ensure<HealthBar>(loaded), loaded.GetComponent<Health>());
             PrefabUtility.SaveAsPrefabAsset(loaded, EnemyPrefab);
             PrefabUtility.UnloadPrefabContents(loaded);
             return;
@@ -159,6 +165,7 @@ public static class ProjectSetupBuilder
         hp.despawnOnDeath = true;                 // enemies leave the world
 
         ConfigureBrain(go.AddComponent<EnemyBrain>());
+        ConfigureEnemyBar(go.AddComponent<HealthBar>(), hp);
 
         PrefabUtility.SaveAsPrefabAsset(go, EnemyPrefab);
         Object.DestroyImmediate(go);
@@ -172,6 +179,15 @@ public static class ProjectSetupBuilder
         brain.moveSpeed = 2f;
         brain.damage = 5;
         brain.attackCooldown = 1.2f;
+    }
+
+    static void ConfigureEnemyBar(HealthBar bar, Health hp)
+    {
+        bar.health = hp;
+        bar.hideWhenFull = true;          // only appears once hurt, so the map stays clean
+        bar.offset = new Vector3(0f, 0.85f, 0f);
+        bar.width = 0.7f;
+        bar.height = 0.1f;
     }
 
     static Sprite FirstSpriteOf(string sheetPath)
