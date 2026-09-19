@@ -111,11 +111,22 @@ public static class ProjectSetupBuilder
         NetworkManager nm = Object.FindFirstObjectByType<NetworkManager>();
         if (nm == null) { Debug.LogWarning("[Wanderers] No NetworkManager in the open scene"); return; }
 
-        if (nm.GetComponent<SessionHUD>() != null) return;
+        if (nm.GetComponent<SessionHUD>() != null)
+        {
+            if (nm.GetComponent<NetworkDiagnostics>() == null)
+            {
+                nm.gameObject.AddComponent<NetworkDiagnostics>();
+                EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
+            }
+            return;
+        }
 
         SessionHUD hud = nm.gameObject.AddComponent<SessionHUD>();
         hud.maxPlayers = 3;
         hud.localHud = nm.GetComponent<NetworkHUD>();
+
+        if (nm.GetComponent<NetworkDiagnostics>() == null)
+            nm.gameObject.AddComponent<NetworkDiagnostics>();
 
         EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
         Debug.Log("[Wanderers] Added SessionHUD for online play");
