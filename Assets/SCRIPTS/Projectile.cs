@@ -65,7 +65,9 @@ public class Projectile : NetworkBehaviour
         NetworkObject hitObject = other.GetComponentInParent<NetworkObject>();
         if (hitObject != null && hitObject.OwnerClientId == shooterClientId) return;
 
-        // TODO: hand `damage` to a Health component once enemies exist.
+        Health target = other.GetComponentInParent<Health>();
+        if (target != null && !target.IsDead) target.ServerTakeDamage(damage, shooterClientId);
+
         if (impactEffect != null) SpawnImpactRpc(transform.position);
 
         NetworkObject.Despawn();
