@@ -17,6 +17,9 @@ public class MeleeArcAbility : Ability
     public LayerMask hitLayers = ~0;
     public int maxTargets = 8;
 
+    [Tooltip("On: brothers can hit each other (duels, PvP). Off: co-op PvE only.")]
+    public bool friendlyFire = true;
+
     [Tooltip("Delay before the hit registers, so it lands when the blade is out " +
              "rather than the instant the key goes down.")]
     public float windupSeconds = 0.15f;
@@ -49,9 +52,13 @@ public class MeleeArcAbility : Ability
             Health target = col.GetComponentInParent<Health>();
             if (target == null || target.IsDead) continue;
 
-            // Never hit yourself, and this is co-op PvE so never hit a brother.
+            // Never hit yourself. Other players only when friendly fire is on.
             if (target.gameObject == gameObject) continue;
-            if (target.GetComponent<AbilityLoadout>() != null) continue;
+            if (!friendlyFire && target.GetComponent<AbilityLoadout>() != null) continue;
+
+            // Dead players are not punching bags.
+            PlayerDeath downed = target.GetComponent<PlayerDeath>();
+            if (downed != null && downed.IsDead) continue;
 
             Vector2 toTarget = (Vector2)col.bounds.ClosestPoint(centre) - centre;
             if (toTarget.sqrMagnitude > 0.0001f &&

@@ -8,6 +8,7 @@ public class Movement : NetworkBehaviour
     public Animator anim;
     public SpriteRenderer body;
     public AimInput aim;                    // optional: face where you shoot, not where you walk
+    public PlayerDeath death;               // optional: set automatically if present
     public bool faceAimAlways = true;       // false: only turn to the aim while actually firing
     public int facingDirection = 1;
 
@@ -15,6 +16,7 @@ public class Movement : NetworkBehaviour
     {
         if (body == null) body = GetComponent<SpriteRenderer>();
         if (aim == null) aim = GetComponent<AimInput>();
+        if (death == null) death = GetComponent<PlayerDeath>();
     }
 
     public override void OnNetworkSpawn()
@@ -27,6 +29,14 @@ public class Movement : NetworkBehaviour
     void FixedUpdate()
     {
         if (!IsOwner) return;
+
+        if (death != null && death.IsDead)
+        {
+            rb.linearVelocity = Vector2.zero;
+            anim.SetFloat("Horizontal", 0f);
+            anim.SetFloat("Vertical", 0f);
+            return;
+        }
 
         Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 

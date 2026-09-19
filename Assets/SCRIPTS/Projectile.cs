@@ -14,6 +14,9 @@ public class Projectile : NetworkBehaviour
     public LayerMask hitLayers = ~0;
     public GameObject impactEffect;
 
+    [Tooltip("On: brothers can hit each other (duels, PvP). Off: co-op PvE only.")]
+    public bool friendlyFire = true;
+
     readonly NetworkVariable<Vector2> heading = new NetworkVariable<Vector2>(Vector2.right);
     readonly NetworkVariable<int> sortingOrder = new NetworkVariable<int>(1);
 
@@ -66,7 +69,14 @@ public class Projectile : NetworkBehaviour
         if (hitObject != null && hitObject.OwnerClientId == shooterClientId) return;
 
         Health target = other.GetComponentInParent<Health>();
-        if (target != null && !target.IsDead) target.ServerTakeDamage(damage, shooterClientId);
+        if (target != null && !target.IsDead)
+        {
+            bool isPlayer = target.GetComponent<AbilityLoadout>() != null;
+            PlayerDeath downed = target.GetComponent<PlayerDeath>();
+            bool allowed = (friendlyFire || !isPlayer) && (downed == null || !downed.IsDead);
+
+            if (allowed) target.ServerTakeDamage(damage, shooterClientId);
+        }
 
         if (impactEffect != null) SpawnImpactRpc(transform.position);
 

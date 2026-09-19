@@ -14,23 +14,26 @@ public static class ProjectSetupBuilder
     const string EnemyPrefab = "Assets/PREFABS/TestDummy.prefab";
     const string Controller = "Assets/ANIMATIONS/PlayerBase.controller";
     const string EnemyLayer = "Enemy";
+    const string PlayerLayer = "Player";
 
     [MenuItem("Tools/Wanderers/Wire Up Gameplay")]
     public static void WireUp()
     {
         int enemyLayer = EnsureLayer(EnemyLayer);
-        if (enemyLayer < 0)
+        int playerLayer = EnsureLayer(PlayerLayer);
+
+        if (enemyLayer < 0 || playerLayer < 0)
         {
-            Debug.LogError("[Wanderers] No free layer slot for " + EnemyLayer);
+            Debug.LogError("[Wanderers] No free layer slots for Enemy/Player");
             return;
         }
 
-        SetupPlayer(enemyLayer);
+        SetupPlayer(enemyLayer, playerLayer);
         SetupTestDummy(enemyLayer);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("[Wanderers] Gameplay wired. Layer '" + EnemyLayer + "' = " + enemyLayer);
+        Debug.Log(string.Format("[Wanderers] Gameplay wired. Enemy={0}, Player={1}", enemyLayer, playerLayer));
     }
 
     // ---------------------------------------------------------------- layers
@@ -62,10 +65,12 @@ public static class ProjectSetupBuilder
 
     // ---------------------------------------------------------------- player
 
-    static void SetupPlayer(int enemyLayer)
+    static void SetupPlayer(int enemyLayer, int playerLayer)
     {
         GameObject root = PrefabUtility.LoadPrefabContents(PlayerPrefab);
         if (root == null) { Debug.LogError("[Wanderers] Missing " + PlayerPrefab); return; }
+
+        root.layer = playerLayer;
 
         // Swap in the generated controller if the builder has been run.
         var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(Controller);
@@ -89,16 +94,24 @@ public static class ProjectSetupBuilder
         swing.damage = 10;
         swing.windupSeconds = 0.15f;
         swing.knockback = 2f;
-        swing.hitLayers = 1 << enemyLayer;
+        swing.friendlyFire = true;                        // brothers can duel
+        // Both layers, or the swing would pass straight through other players.
+        swing.hitLayers = (1 << enemyLayer) | (1 << playerLayer);
+
+        PlayerDeath death = Ensure<PlayerDeath>(root);
+        death.respawnSeconds = 5f;
+        death.respawnAtStart = true;
 
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
+        loadout.death = death;
 
         Movement move = root.GetComponent<Movement>();
         if (move != null)
         {
             move.aim = aim;
+            move.death = death;
             if (move.body == null) move.body = root.GetComponent<SpriteRenderer>();
         }
 
@@ -110,7 +123,16 @@ public static class ProjectSetupBuilder
 
     static void SetupTestDummy(int enemyLayer)
     {
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(EnemyPrefab) != null) return;
+        GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(EnemyPrefab);
+        if (existing != null)
+        {
+            GameObject loaded = PrefabUtility.LoadPrefabContents(EnemyPrefab);
+            loaded.layer = enemyLayer;
+            ConfigureBrain(Ensure<EnemyBrain>(loaded));
+            PrefabUtility.SaveAsPrefabAsset(loaded, EnemyPrefab);
+            PrefabUtility.UnloadPrefabContents(loaded);
+            return;
+        }
 
         var go = new GameObject("TestDummy");
         go.layer = enemyLayer;
@@ -136,8 +158,20 @@ public static class ProjectSetupBuilder
         hp.maxHealth = 30;
         hp.despawnOnDeath = true;                 // enemies leave the world
 
+        ConfigureBrain(go.AddComponent<EnemyBrain>());
+
         PrefabUtility.SaveAsPrefabAsset(go, EnemyPrefab);
         Object.DestroyImmediate(go);
+    }
+
+    static void ConfigureBrain(EnemyBrain brain)
+    {
+        brain.aggroRange = 6f;
+        brain.attackRange = 0.9f;
+        brain.giveUpRange = 10f;
+        brain.moveSpeed = 2f;
+        brain.damage = 5;
+        brain.attackCooldown = 1.2f;
     }
 
     static Sprite FirstSpriteOf(string sheetPath)

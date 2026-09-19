@@ -17,6 +17,10 @@ GameObject:
   - component: {fileID: 3944044952917712655}
   - component: {fileID: 8053190018001894926}
   - component: {fileID: 985260733943317175}
+  - component: {fileID: 8900254977945951902}
+  - component: {fileID: 792121753185170704}
+  - component: {fileID: 9105195392067317132}
+  - component: {fileID: 4702837962609108408}
   m_Layer: 0
   m_Name: Warrior
   m_TagString: Player
@@ -104,7 +108,7 @@ Animator:
   m_GameObject: {fileID: 677896895676311075}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: dd8575a9e6fbe5145b56e699c2d42644, type: 2}
+  m_Controller: {fileID: 9100000, guid: ee0aa6fb512c67f4ba6e011144508923, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -192,7 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1830844667
+  GlobalObjectIdHash: 3052972476
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -224,7 +228,7 @@ MonoBehaviour:
   rb: {fileID: 2496571781009063313}
   anim: {fileID: 6025805037794312403}
   body: {fileID: 6140671998413990239}
-  aim: {fileID: 0}
+  aim: {fileID: 8900254977945951902}
   faceAimAlways: 1
   facingDirection: 1
 --- !u!114 &8053190018001894926
@@ -293,3 +297,80 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &8900254977945951902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 007f2ec34935a634a94249e90a2e2f0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  aimOrigin: {fileID: 6542146264403199364}
+  aimZoneLeftEdge: 0
+  touchHoldToFire: 1
+  mouseHoldToFire: 1
+--- !u!114 &792121753185170704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0187ea92f4c8c5a41b55f90ad88bd55a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  maxHealth: 100
+  despawnOnDeath: 0
+--- !u!114 &9105195392067317132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec05a51b16cb7a04c85643dddbcabd71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  displayName: Sword Swing
+  cooldown: 0.45
+  animatorTrigger: Attack
+  origin: {fileID: 6542146264403199364}
+  range: 1.4
+  arcDegrees: 120
+  damage: 10
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  maxTargets: 8
+  windupSeconds: 0.15
+  knockback: 2
+--- !u!114 &4702837962609108408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 931ef6b5745213b4b903d6b20ff7070c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  aim: {fileID: 8900254977945951902}
+  m1: {fileID: 9105195392067317132}
+  special: {fileID: 0}
+  super: {fileID: 0}
+  specialKey: 113
+  superKey: 101
