@@ -18,6 +18,11 @@ public class EnemyBrain : NetworkBehaviour
     public int damage = 5;
     public float attackCooldown = 1.2f;
 
+    [Header("Reaction")]
+    [Tooltip("Pause after taking a hit. Without this the brain zeroes velocity every " +
+         "physics step, cancelling knockback instantly - hits land but look ignored.")]
+    public float hitstunSeconds = 0.25f;
+
     readonly NetworkVariable<bool> faceLeft = new NetworkVariable<bool>();
 
     Rigidbody2D rb;
@@ -26,6 +31,8 @@ public class EnemyBrain : NetworkBehaviour
     Animator anim;
     Health target;
     float nextAttackTime;
+    float hitstunUntil;
+    int lastKnownHealth = -1;
 
     void Awake()
     {
@@ -33,6 +40,27 @@ public class EnemyBrain : NetworkBehaviour
         health = GetComponent<Health>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer && health != null)
+        {
+            lastKnownHealth = health.Current;
+            health.OnChanged += ServerNoteHealthChange;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer && health != null) health.OnChanged -= ServerNoteHealthChange;
+    }
+
+    void ServerNoteHealthChange(int current, int max)
+    {
+        // Only a decrease is a hit; healing should not stun.
+        if (current < lastKnownHealth) hitstunUntil = Time.time + hitstunSeconds;
+        lastKnownHealth = current;
     }
 
     void Update()
@@ -48,6 +76,13 @@ public class EnemyBrain : NetworkBehaviour
         if (health.IsDead)
         {
             rb.linearVelocity = Vector2.zero;
+            SetSpeed(0f);
+            return;
+        }
+
+        // Reeling from a hit: leave the rigidbody alone so knockback actually moves it.
+        if (Time.time < hitstunUntil)
+        {
             SetSpeed(0f);
             return;
         }

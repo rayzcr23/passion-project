@@ -21,7 +21,7 @@ public class MeleeArcAbility : Ability
          "A target shoving against you slides around your collider, so its angle " +
          "swings wildly exactly when it is closest - a narrow cone rejects the very " +
          "enemies you are standing on. Still never hits anything strictly behind.")]
-    public float pointBlankRadius = 0.7f;
+    public float pointBlankRadius = 1.0f;
 
     [Tooltip("On: brothers can hit each other (duels, PvP). Off: co-op PvE only.")]
     public bool friendlyFire = true;
