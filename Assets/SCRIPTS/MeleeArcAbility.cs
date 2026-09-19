@@ -138,9 +138,11 @@ public class MeleeArcAbility : Ability
         Transform t = origin != null ? origin : transform;
 
         AimInput aimInput = GetComponent<AimInput>();
+        Movement movement = GetComponent<Movement>();
+
         Vector3 facing = (aimInput != null && aimInput.HasAim)
             ? (Vector3)aimInput.AimDirection
-            : Vector3.right;
+            : (movement != null ? new Vector3(movement.facingDirection, 0f, 0f) : Vector3.right);
 
         Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.35f);
         Gizmos.DrawWireSphere(t.position, range);

@@ -129,6 +129,7 @@ public class AimInput : NetworkBehaviour
         if (cam == null) return;
 
         float zDepth = Mathf.Abs(cam.transform.position.z - aimOrigin.position.z);
+        if (zDepth < 0.1f) zDepth = 10f;
         Vector3 screenPos3 = new Vector3(screenPos.x, screenPos.y, zDepth);
         Vector2 world = cam.ScreenToWorldPoint(screenPos3);
         Vector2 delta = world - (Vector2)aimOrigin.position;
