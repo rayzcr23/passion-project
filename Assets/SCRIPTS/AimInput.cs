@@ -1,0 +1,111 @@
+using UnityEngine;
+
+/// Single source of aim + fire input. Gameplay scripts read AimDirection/FireHeld
+/// from here and never touch Input.mousePosition or Input.touches themselves, so
+/// desktop and iPad share one code path.
+public class AimInput : MonoBehaviour
+{
+    [Header("Origin")]
+    public Transform aimOrigin;             // aim is measured from here; defaults to this object
+
+    [Header("Touch (iPad)")]
+    [Range(0f, 1f)]
+    public float aimZoneLeftEdge = 0f;      // fingers left of this screen fraction are ignored.
+                                            // 0 = tap anywhere to aim, right for a hardware
+                                            // keyboard. Raise to ~0.35 if you ever add an
+                                            // on-screen movement stick on the left.
+    public bool touchHoldToFire = true;     // keep firing while the finger is down
+
+    [Header("Desktop")]
+    public bool mouseHoldToFire = true;
+
+    public Vector2 AimDirection { get; private set; } = Vector2.right;
+    public bool FireHeld { get; private set; }
+    public bool FirePressed { get; private set; }
+    public bool HasAim { get; private set; }
+
+    Camera cam;
+    int activeTouchId = -1;
+
+    void Awake()
+    {
+        if (aimOrigin == null) aimOrigin = transform;
+        cam = Camera.main;
+
+        // On iOS every touch ALSO arrives as a fake mouse click, which would fire
+        // each shot twice. Turn that off so the two paths stay separate.
+        Input.simulateMouseWithTouches = false;
+    }
+
+    void Update()
+    {
+        if (cam == null) cam = Camera.main;
+        FirePressed = false;
+
+        if (Input.touchCount > 0) ReadTouch();
+        else ReadMouse();
+    }
+
+    void ReadTouch()
+    {
+        // Claim a finger that began inside the aim zone.
+        if (activeTouchId < 0)
+        {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch t = Input.GetTouch(i);
+                if (t.phase != TouchPhase.Began) continue;
+                if (t.position.x / Screen.width < aimZoneLeftEdge) continue;
+
+                activeTouchId = t.fingerId;
+                PointAt(t.position);
+                FirePressed = true;
+                break;
+            }
+        }
+
+        if (activeTouchId < 0)
+        {
+            FireHeld = false;
+            return;
+        }
+
+        // Follow the claimed finger until it lifts, so drag re-aims.
+        for (int i = 0; i < Input.touchCount; i++)
+        {
+            Touch t = Input.GetTouch(i);
+            if (t.fingerId != activeTouchId) continue;
+
+            if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) break;
+
+            PointAt(t.position);
+            FireHeld = touchHoldToFire;
+            return;
+        }
+
+        activeTouchId = -1;
+        FireHeld = false;
+    }
+
+    void ReadMouse()
+    {
+        activeTouchId = -1;
+        PointAt(Input.mousePosition);                            // hover aims, no click needed
+        if (Input.GetMouseButtonDown(0)) FirePressed = true;
+        FireHeld = mouseHoldToFire && Input.GetMouseButton(0);
+    }
+
+    void PointAt(Vector2 screenPos)
+    {
+        if (cam == null) return;
+
+        Vector2 world = cam.ScreenToWorldPoint(screenPos);
+        Vector2 delta = world - (Vector2)aimOrigin.position;
+
+        // Pointer sitting exactly on the pivot: keep the last good aim rather than snapping.
+        if (delta.sqrMagnitude < 0.0001f) return;
+
+        AimDirection = delta.normalized;
+        HasAim = true;
+    }
+}

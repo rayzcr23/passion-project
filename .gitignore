@@ -1,0 +1,47 @@
+# ---- Unity generated folders (regenerated on open; never commit) ----
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# ---- Asset Store / packages ----
+/[Aa]ssets/AssetStoreTools*
+/[Aa]ssets/Plugins/Editor/JetBrains*
+
+# ---- Visual Studio / Rider / VS Code ----
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ---- OS noise ----
+.DS_Store
+Thumbs.db
+desktop.ini
+__MACOSX/
+
+# ---- Builds / crash reports ----
+*.apk
+*.aab
+*.unitypackage
+*.app
+crashlytics-build.properties
+sysinfo.txt
+__MACOSX.meta
