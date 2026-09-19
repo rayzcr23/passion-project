@@ -26,7 +26,7 @@ public class Movement : MonoBehaviour
         anim.SetFloat("Horizontal", Mathf.Abs(input.x));
         anim.SetFloat("Vertical", Mathf.Abs(input.y));
 
-        rb.velocity = input * speed;
+        rb.linearVelocity = input * speed;
 
         // Aim wins over movement: a wizard backing away left while shooting right faces right.
         // On desktop the cursor always has a position, so faceAimAlways decides whether the

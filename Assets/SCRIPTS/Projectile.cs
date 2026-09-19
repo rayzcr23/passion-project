@@ -28,7 +28,7 @@ public class Projectile : MonoBehaviour
         direction = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
 
         transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
-        rb.velocity = direction * speed;
+        rb.linearVelocity = direction * speed;
 
         if (sprite != null) sprite.sortingOrder = sortingOrder;
     }
