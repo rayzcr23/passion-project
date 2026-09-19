@@ -74,9 +74,9 @@ public class NetworkDiagnostics : MonoBehaviour
                         move.facingDirection > 0 ? "R" : "L"));
 
                 if (loadout != null)
-                    sb.AppendLine(string.Format("ATTACK dir: ({0:F2},{1:F2})  pointerAim={2}",
+                    sb.AppendLine(string.Format("ATTACK dir: ({0:F2},{1:F2})  mode={2}",
                         loadout.LastAttackDirection.x, loadout.LastAttackDirection.y,
-                        loadout.usePointerAim ? "ON" : "off"));
+                        loadout.aimMode));
             }
 
             sb.AppendLine();

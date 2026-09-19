@@ -240,7 +240,9 @@ public static class ProjectSetupBuilder
         swing.animatorTrigger = "Attack";
         swing.origin = root.transform;          // no pivot needed: the swing anim sells it
         swing.range = 1.4f;
-        swing.arcDegrees = 120f;
+        // Facing is left/right only, so the arc has to cover the whole front half
+        // or enemies above and below you sit outside it.
+        swing.arcDegrees = 180f;
         swing.damage = 10;
         swing.windupSeconds = 0.15f;
         swing.pointBlankRadius = 1.0f;   // must exceed the goblin's 0.9 attack range
@@ -281,7 +283,7 @@ public static class ProjectSetupBuilder
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
-        loadout.usePointerAim = false;   // swing where you walk, not where the cursor sits
+        loadout.aimMode = AbilityLoadout.AimMode.Facing;   // hitbox sits in front of the sprite
         loadout.death = death;
         loadout.guard = guard;
 
