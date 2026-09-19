@@ -66,7 +66,8 @@ public static class CharacterAnimationBuilder
             sliced, built.Count, OutRoot));
     }
 
-    static bool SliceSheet(string path)
+    /// Shared with EnemyAnimationBuilder.
+    public static bool SliceSheet(string path)
     {
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) { Debug.LogWarning("[Wanderers] Not found: " + path); return false; }

@@ -23,6 +23,7 @@ public class EnemyBrain : NetworkBehaviour
     Rigidbody2D rb;
     Health health;
     SpriteRenderer sprite;
+    Animator anim;
     Health target;
     float nextAttackTime;
 
@@ -31,6 +32,7 @@ public class EnemyBrain : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
         health = GetComponent<Health>();
         sprite = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
     }
 
     void Update()
@@ -46,6 +48,7 @@ public class EnemyBrain : NetworkBehaviour
         if (health.IsDead)
         {
             rb.linearVelocity = Vector2.zero;
+            SetSpeed(0f);
             return;
         }
 
@@ -55,6 +58,7 @@ public class EnemyBrain : NetworkBehaviour
         if (target == null)
         {
             rb.linearVelocity = Vector2.zero;
+            SetSpeed(0f);
             return;
         }
 
@@ -64,6 +68,7 @@ public class EnemyBrain : NetworkBehaviour
         if (distance > aggroRange)
         {
             rb.linearVelocity = Vector2.zero;
+            SetSpeed(0f);
             return;
         }
 
@@ -72,17 +77,26 @@ public class EnemyBrain : NetworkBehaviour
         if (distance > attackRange)
         {
             rb.linearVelocity = toTarget.normalized * moveSpeed;
+            SetSpeed(moveSpeed);
             return;
         }
 
         // In range: stop and swing on cooldown.
         rb.linearVelocity = Vector2.zero;
+        SetSpeed(0f);
 
         if (Time.time >= nextAttackTime)
         {
             nextAttackTime = Time.time + attackCooldown;
+
+            if (anim != null) anim.SetTrigger("Attack");
             target.ServerTakeDamage(damage, OwnerClientId);
         }
+    }
+
+    void SetSpeed(float speed)
+    {
+        if (anim != null) anim.SetFloat("Speed", speed);
     }
 
     bool Far(Health h, float range)

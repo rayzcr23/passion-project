@@ -11,7 +11,9 @@ using UnityEngine;
 public static class ProjectSetupBuilder
 {
     const string PlayerPrefab = "Assets/PREFABS/Warrior.prefab";
-    const string EnemyPrefab = "Assets/PREFABS/TestDummy.prefab";
+    const string EnemyPrefab = "Assets/PREFABS/Goblin.prefab";
+    const string EnemyController = "Assets/ANIMATIONS/Goblin.controller";
+    const string GoblinSheet = "Assets/Tiny Swords/Tiny Swords (Update 010)/Factions/Goblins/Troops/Torch/Red/Torch_Red.png";
     const string Controller = "Assets/ANIMATIONS/PlayerBase.controller";
     const string EnemyLayer = "Enemy";
     const string PlayerLayer = "Player";
@@ -29,7 +31,7 @@ public static class ProjectSetupBuilder
         }
 
         SetupPlayer(enemyLayer, playerLayer);
-        SetupTestDummy(enemyLayer);
+        SetupGoblin(enemyLayer);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -143,49 +145,55 @@ public static class ProjectSetupBuilder
 
     // ------------------------------------------------------------ test dummy
 
-    static void SetupTestDummy(int enemyLayer)
+    static void SetupGoblin(int enemyLayer)
     {
-        GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(EnemyPrefab);
-        if (existing != null)
-        {
-            GameObject loaded = PrefabUtility.LoadPrefabContents(EnemyPrefab);
-            loaded.layer = enemyLayer;
-            ConfigureBrain(Ensure<EnemyBrain>(loaded));
-            ConfigureEnemyBar(Ensure<HealthBar>(loaded), loaded.GetComponent<Health>());
-            PrefabUtility.SaveAsPrefabAsset(loaded, EnemyPrefab);
-            PrefabUtility.UnloadPrefabContents(loaded);
-            return;
-        }
+        bool isNew = AssetDatabase.LoadAssetAtPath<GameObject>(EnemyPrefab) == null;
 
-        var go = new GameObject("TestDummy");
+        GameObject go = isNew ? new GameObject("Goblin")
+                              : PrefabUtility.LoadPrefabContents(EnemyPrefab);
         go.layer = enemyLayer;
 
-        var sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = FirstSpriteOf(
-            "Assets/Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Blue Units/Warrior/Warrior_Idle.png");
-        sr.color = new Color(1f, 0.45f, 0.45f);   // red tint so it reads as hostile
+        var sr = Ensure<SpriteRenderer>(go);
+        if (sr.sprite == null) sr.sprite = FirstSpriteOf(GoblinSheet);
         sr.sortingOrder = 1;
 
-        var rb = go.AddComponent<Rigidbody2D>();
+        var animator = Ensure<Animator>(go);
+        var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(EnemyController);
+        if (controller != null) animator.runtimeAnimatorController = controller;
+        animator.applyRootMotion = false;
+
+        var rb = Ensure<Rigidbody2D>(go);
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.linearDamping = 6f;                    // knockback decays instead of sliding forever
 
-        var col = go.AddComponent<CircleCollider2D>();
+        var col = Ensure<CircleCollider2D>(go);
         col.radius = 0.35f;
 
-        go.AddComponent<NetworkObject>();
-        go.AddComponent<NetworkTransform>();
+        Ensure<NetworkObject>(go);
+        Ensure<NetworkTransform>(go);
 
-        Health hp = go.AddComponent<Health>();
+        // Server authority: EnemyBrain runs on the server, so the server drives
+        // the animator and replicates it out. Unity leaves m_Animator empty.
+        var netAnimator = Ensure<NetworkAnimator>(go);
+        var so = new SerializedObject(netAnimator);
+        SerializedProperty animProp = so.FindProperty("m_Animator");
+        if (animProp != null) animProp.objectReferenceValue = animator;
+        SerializedProperty authProp = so.FindProperty("AuthorityMode");
+        if (authProp != null) authProp.enumValueIndex = 0;   // Server
+        so.ApplyModifiedProperties();
+
+        Health hp = Ensure<Health>(go);
         hp.maxHealth = 30;
         hp.despawnOnDeath = true;                 // enemies leave the world
 
-        ConfigureBrain(go.AddComponent<EnemyBrain>());
-        ConfigureEnemyBar(go.AddComponent<HealthBar>(), hp);
+        ConfigureBrain(Ensure<EnemyBrain>(go));
+        ConfigureEnemyBar(Ensure<HealthBar>(go), hp);
 
         PrefabUtility.SaveAsPrefabAsset(go, EnemyPrefab);
-        Object.DestroyImmediate(go);
+
+        if (isNew) Object.DestroyImmediate(go);
+        else PrefabUtility.UnloadPrefabContents(go);
     }
 
     static void ConfigureBrain(EnemyBrain brain)
