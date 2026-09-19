@@ -60,8 +60,16 @@ public class MeleeArcAbility : Ability
             PlayerDeath downed = target.GetComponent<PlayerDeath>();
             if (downed != null && downed.IsDead) continue;
 
-            Vector2 toTarget = (Vector2)col.bounds.ClosestPoint(centre) - centre;
-            if (toTarget.sqrMagnitude > 0.0001f &&
+            // Measure the angle to the target's CENTRE, not the nearest point on its
+            // bounds. The nearest point sits on the side of the box when you are
+            // close, which threw the angle far off for a target right in front; and
+            // when a target overlapped you it returned your own position, zeroing
+            // the vector and bypassing the arc test entirely - which is how enemies
+            // behind you were getting hit.
+            Vector2 toTarget = (Vector2)col.bounds.center - centre;
+
+            // Only truly concentric now, which OverlapCircle already says is in range.
+            if (toTarget.sqrMagnitude > 0.000001f &&
                 Vector2.Angle(aimDirection, toTarget.normalized) > halfArc) continue;
 
             target.ServerTakeDamage(damage, OwnerClientId);
