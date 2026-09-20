@@ -179,13 +179,32 @@ public static class ProjectSetupBuilder
     /// and the NetworkManager object itself is not a spawnable network object.
     static void EnsureQuestSystem(NetworkManager nm)
     {
-        if (Object.FindFirstObjectByType<QuestManager>() == null)
+        QuestManager qm = Object.FindFirstObjectByType<QuestManager>();
+
+        if (qm == null)
         {
             var go = new GameObject("QuestSystem");
             go.AddComponent<NetworkObject>();
-            go.AddComponent<QuestManager>();
-            Debug.Log("[Wanderers] Added QuestSystem - drop your quest assets on it");
+            qm = go.AddComponent<QuestManager>();
+            Debug.Log("[Wanderers] Added QuestSystem");
         }
+
+        // A quest missing from this list still starts, but cannot be looked up -
+        // so it shows its raw id, draws no progress bar, and never advances.
+        // Far too quiet a failure to leave to a manual drag.
+        string[] questGuids = AssetDatabase.FindAssets("t:QuestDefinition");
+        var found = new System.Collections.Generic.List<QuestDefinition>();
+
+        foreach (string guid in questGuids)
+        {
+            var quest = AssetDatabase.LoadAssetAtPath<QuestDefinition>(
+                AssetDatabase.GUIDToAssetPath(guid));
+            if (quest != null) found.Add(quest);
+        }
+
+        qm.quests = found.ToArray();
+        EditorUtility.SetDirty(qm);
+        Debug.Log("[Wanderers] QuestSystem knows " + found.Count + " quest(s)");
 
         if (Object.FindFirstObjectByType<DialogueUI>() == null)
         {

@@ -89,6 +89,11 @@ public class QuestManager : NetworkBehaviour
         if (!IsServer || string.IsNullOrEmpty(questId)) return;
         if (StateOf(questId) != 0) return;          // already running or done
 
+        if (Find(questId) == null)
+            Debug.LogWarning("[Wanderers] Quest '" + questId + "' is not in QuestSystem's " +
+                             "Quests list, so it cannot progress or show a bar. " +
+                             "Run Tools > Wanderers > Wire Up Gameplay.", this);
+
         Entries.Add(new Progress { id = questId, state = 1, counter = 0 });
     }
 
