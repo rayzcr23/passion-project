@@ -21,4 +21,7 @@ MonoBehaviour:
   inProgressLines:
   - you have not killed enough sheep
   completedLines:
-  - good boy
+  - Well Done Traveler
+  - Now you can press Q for a ring of swords ability or you can press E to use the
+    stomp ability
+  - Now test your abilities out by killing 10 more sheep

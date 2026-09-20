@@ -3,6 +3,11 @@ using UnityEngine;
 
 /// A villager you can walk up to and talk to.
 ///
+/// An NPC can hold a whole questline. Conversations are listed in order and the
+/// NPC uses the latest one whose previous conversation's quest is complete, so
+/// the old man greets you differently once you have culled the flock. Within a
+/// conversation, DialogueData still picks lines by that quest's own state.
+///
 /// The conversation runs entirely on the client who pressed the key - nobody
 /// else's screen is interrupted. Only the outcome (a quest starting, a TalkTo
 /// objective completing) goes to the server, where quest state lives.
@@ -13,6 +18,12 @@ public class DialogueNPC : MonoBehaviour
     [Tooltip("Stable id for TalkTo objectives.")]
     public string npcId = "villager";
 
+    [Tooltip("Conversations in order. The NPC advances to the next once the " +
+         "previous one's quest is complete. Leave Conversations empty to use " +
+         "the single Dialogue below instead.")]
+    public DialogueData[] conversations;
+
+    [Tooltip("Used when Conversations is empty.")]
     public DialogueData dialogue;
 
     [Header("Interaction")]
@@ -21,6 +32,7 @@ public class DialogueNPC : MonoBehaviour
     public Vector3 promptOffset = new Vector3(0f, 1.1f, 0f);
 
     bool playerInRange;
+    DialogueData active;
 
     void Update()
     {
@@ -39,38 +51,66 @@ public class DialogueNPC : MonoBehaviour
 
     void Talk()
     {
-        if (dialogue == null) return;
+        active = CurrentConversation();
+        if (active == null) return;
 
-        string[] lines = ChooseLines();
-        DialogueUI.Instance.Open(dialogue.speakerName, lines, OnConversationEnded);
+        DialogueUI.Instance.Open(active.speakerName, ChooseLines(active), OnConversationEnded);
     }
 
-    string[] ChooseLines()
+    /// Walks the list in order and stops at the first chapter whose gate is not
+    /// yet open, so a questline plays out in sequence rather than all at once.
+    DialogueData CurrentConversation()
+    {
+        DialogueData[] list = (conversations != null && conversations.Length > 0)
+            ? conversations
+            : new[] { dialogue };
+
+        QuestManager qm = QuestManager.Instance;
+        DialogueData chosen = null;
+
+        for (int i = 0; i < list.Length; i++)
+        {
+            if (list[i] == null) continue;
+
+            if (i > 0)
+            {
+                // The gate is the previous chapter's quest. No quest there means
+                // it was pure conversation, so the chapter opens immediately.
+                QuestDefinition gate = list[i - 1] != null ? list[i - 1].startsQuest : null;
+
+                if (gate != null && (qm == null || !qm.IsComplete(gate.questId))) break;
+            }
+            chosen = list[i];
+        }
+        return chosen;
+    }
+
+    string[] ChooseLines(DialogueData data)
     {
         QuestManager qm = QuestManager.Instance;
-        QuestDefinition quest = dialogue.startsQuest;
+        QuestDefinition quest = data.startsQuest;
 
         if (qm != null && quest != null)
         {
-            if (qm.IsComplete(quest.questId) && dialogue.completedLines.Length > 0)
-                return dialogue.completedLines;
+            if (qm.IsComplete(quest.questId) && data.completedLines.Length > 0)
+                return data.completedLines;
 
-            if (qm.IsActive(quest.questId) && dialogue.inProgressLines.Length > 0)
-                return dialogue.inProgressLines;
+            if (qm.IsActive(quest.questId) && data.inProgressLines.Length > 0)
+                return data.inProgressLines;
         }
-        return dialogue.lines;
+        return data.lines;
     }
 
     void OnConversationEnded()
     {
         QuestManager qm = QuestManager.Instance;
-        if (qm == null) return;
+        if (qm == null || active == null) return;
 
         // Talking is itself an objective for some quests.
         qm.ReportTalkRpc(npcId);
 
-        if (dialogue.startsQuest != null && qm.StateOf(dialogue.startsQuest.questId) == 0)
-            qm.RequestStartRpc(dialogue.startsQuest.questId);
+        if (active.startsQuest != null && qm.StateOf(active.startsQuest.questId) == 0)
+            qm.RequestStartRpc(active.startsQuest.questId);
     }
 
     static Transform LocalPlayer()
