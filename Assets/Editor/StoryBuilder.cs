@@ -57,14 +57,16 @@ public static class StoryBuilder
         WireOldMan(oldMan, reveal);
 
         List<GameObject> villagers = EnsureVillagers(oldMan.transform.position, villagerIdle);
-        EnsureTrigger(sheepQuest.questId, villagers, oldMan, accusation);
+
+        string triggerQuest = FinalQuestId(oldMan, reveal) ?? sheepQuest.questId;
+        EnsureTrigger(triggerQuest, villagers, oldMan, accusation);
 
         EditorSceneManager.MarkSceneDirty(oldMan.scene);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log("[Wanderers] Sheep betrayal built. Kill " + sheepQuest.requiredCount +
-                  " sheep and the old man vanishes.");
+        Debug.Log("[Wanderers] Sheep betrayal built in scene '" + oldMan.scene.name +
+                  "'. Villagers appear when '" + triggerQuest + "' completes.");
     }
 
     static QuestDefinition FindSheepQuest()
@@ -95,20 +97,53 @@ public static class StoryBuilder
         return null;
     }
 
+    /// Appends the reveal as the final chapter, keeping whatever chapters are
+    /// already there. An earlier version replaced chapter 1, which quietly threw
+    /// away the conversation that hands out the second quest.
     static void WireOldMan(GameObject oldMan, DialogueData reveal)
     {
         var npc = oldMan.GetComponent<DialogueNPC>();
         if (npc == null) return;
 
-        DialogueData first = npc.conversations != null && npc.conversations.Length > 0
-            ? npc.conversations[0]
-            : npc.dialogue;
+        var chapters = new List<DialogueData>();
 
-        if (first == null) { Debug.LogWarning("[Wanderers] Old man has no first conversation"); return; }
+        if (npc.conversations != null && npc.conversations.Length > 0)
+        {
+            foreach (DialogueData d in npc.conversations)
+                if (d != null && d != reveal) chapters.Add(d);
+        }
+        else if (npc.dialogue != null)
+        {
+            chapters.Add(npc.dialogue);
+        }
 
-        // Chapter 0 gives the quest, chapter 1 opens once it is complete.
-        npc.conversations = new[] { first, reveal };
+        if (chapters.Count == 0)
+        {
+            Debug.LogWarning("[Wanderers] Old man has no conversation to build on");
+            return;
+        }
+
+        chapters.Add(reveal);           // the act drops last
+        npc.conversations = chapters.ToArray();
         EditorUtility.SetDirty(npc);
+
+        Debug.Log("[Wanderers] Old man now has " + chapters.Count + " chapters, reveal last");
+    }
+
+    /// The villagers should come out after the LAST sheep job, not the first, so
+    /// the trigger follows the final chapter that actually hands out a quest.
+    static string FinalQuestId(GameObject oldMan, DialogueData reveal)
+    {
+        var npc = oldMan.GetComponent<DialogueNPC>();
+        if (npc == null || npc.conversations == null) return null;
+
+        string last = null;
+        foreach (DialogueData d in npc.conversations)
+        {
+            if (d == null || d == reveal) continue;
+            if (d.startsQuest != null) last = d.startsQuest.questId;
+        }
+        return last;
     }
 
     static List<GameObject> EnsureVillagers(Vector3 near, DialogueData lines)
