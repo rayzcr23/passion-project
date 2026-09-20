@@ -11,6 +11,10 @@ public class Health : NetworkBehaviour
 
     [Tooltip("Bosses take the Super's boss percentage instead of the normal one.")]
     public bool isBoss = false;
+
+    [Tooltip("What this creature counts as for Kill quest objectives. Blank means " +
+         "it is not quest-relevant - players, for instance.")]
+    public string creatureId = "";
     public bool despawnOnDeath = true;      // true for enemies, false for players
 
     [Tooltip("Server waits this long before removing the body, so DeathEffect has " +
@@ -101,6 +105,11 @@ public class Health : NetworkBehaviour
 
     void ServerDie()
     {
+        // Quest credit is party-wide, so it is reported once on the server rather
+        // than by whoever landed the blow.
+        if (!string.IsNullOrEmpty(creatureId) && QuestManager.Instance != null)
+            QuestManager.Instance.ServerReportKill(creatureId);
+
         // Players stay in the world so they can be revived; enemies leave.
         if (!despawnOnDeath) return;
 

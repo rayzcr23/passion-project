@@ -130,6 +130,8 @@ public static class ProjectSetupBuilder
                 nm.gameObject.AddComponent<NetworkDiagnostics>();
                 EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
             }
+            EnsureQuestSystem(nm);
+            EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
             return;
         }
 
@@ -140,8 +142,30 @@ public static class ProjectSetupBuilder
         if (nm.GetComponent<NetworkDiagnostics>() == null)
             nm.gameObject.AddComponent<NetworkDiagnostics>();
 
+        EnsureQuestSystem(nm);
+
         EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
         Debug.Log("[Wanderers] Added SessionHUD for online play");
+    }
+
+    /// QuestManager needs a NetworkObject of its own: quest state is replicated,
+    /// and the NetworkManager object itself is not a spawnable network object.
+    static void EnsureQuestSystem(NetworkManager nm)
+    {
+        if (Object.FindFirstObjectByType<QuestManager>() == null)
+        {
+            var go = new GameObject("QuestSystem");
+            go.AddComponent<NetworkObject>();
+            go.AddComponent<QuestManager>();
+            Debug.Log("[Wanderers] Added QuestSystem - drop your quest assets on it");
+        }
+
+        if (Object.FindFirstObjectByType<DialogueUI>() == null)
+        {
+            var ui = new GameObject("DialogueUI");
+            ui.AddComponent<DialogueUI>();
+            Debug.Log("[Wanderers] Added DialogueUI");
+        }
     }
 
     /// Deleting a prefab leaves a null entry behind in the auto-populated list,
@@ -420,6 +444,7 @@ public static class ProjectSetupBuilder
 
         Health hp = Ensure<Health>(go);
         hp.maxHealth = 30;
+        hp.creatureId = "goblin";                 // for Kill quest objectives
         hp.despawnOnDeath = true;                 // enemies leave the world
         hp.despawnDelay = 0.6f;                   // long enough for DeathEffect to play
 
