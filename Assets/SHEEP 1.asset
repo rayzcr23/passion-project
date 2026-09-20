@@ -17,6 +17,6 @@ MonoBehaviour:
   description: Welcome traveler, go test out your abilities by killing 10 sheep.
   objective: 1
   targetId: sheep
-  requiredCount: 5
+  requiredCount: 10
   completionText: well done traveler.
   nextQuest: {fileID: 0}

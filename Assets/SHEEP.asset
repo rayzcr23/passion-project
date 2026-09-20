@@ -19,4 +19,4 @@ MonoBehaviour:
   targetId: sheep
   requiredCount: 5
   completionText: well done traveler.
-  nextQuest: {fileID: 0}
+  nextQuest: {fileID: 11400000, guid: 381a9540422ed484c8501a9a48121562, type: 2}

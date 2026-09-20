@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
+  m_Name: second encounter encounter 1
+  m_EditorClassIdentifier: 
+  speakerName: wise old man
+  lines:
+  - Welcome traveler
+  - go test out your abilities by killing 10 sheep
+  - After you are done come meet me here
+  startsQuest: {fileID: 11400000, guid: 7cd45d47f7350384d9dbe39a0e63fd2c, type: 2}
+  inProgressLines:
+  - you have not killed enough sheep
+  completedLines:
+  - Well Done Traveler
+  - Now you can press Q for a ring of swords ability or you can press E to use the
+    stomp ability
+  - Now test your abilities out by killing 10 more sheep
