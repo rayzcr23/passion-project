@@ -15,7 +15,6 @@ public class AbilityLoadout : NetworkBehaviour
     public Ability special;
     public Ability super;
 
-    [Header("Keys (desktop)")]
     public enum AimMode
     {
         Facing,     // the way the sprite faces: left or right only
@@ -23,6 +22,7 @@ public class AbilityLoadout : NetworkBehaviour
         Pointer     // at the cursor / touch point
     }
 
+    [Header("Aim")]
     [Tooltip("Facing: the hitbox sits in front of the sprite, left or right. " +
          "Movement: swings the way you last walked, including up and down. " +
          "Pointer: aims at the cursor.")]
@@ -31,6 +31,7 @@ public class AbilityLoadout : NetworkBehaviour
     /// Exposed for the diagnostics overlay.
     public Vector2 LastAttackDirection { get; private set; } = Vector2.right;
 
+    [Header("Keys (desktop)")]
     public KeyCode specialKey = KeyCode.Q;
     public KeyCode superKey = KeyCode.E;
 
