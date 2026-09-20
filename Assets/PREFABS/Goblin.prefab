@@ -299,6 +299,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
+  isBoss: 0
   despawnOnDeath: 1
   despawnDelay: 0.6
 --- !u!114 &5635219322313204071

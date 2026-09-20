@@ -25,6 +25,9 @@ public static class CharacterAnimationBuilder
 
     // Git history has the three-class version (Wizard/Monk, Assassin/Archer) if
     // the brothers ever need different fighting styles.
+    /// One brother per colour, so three identical warriors are tellable apart.
+    static readonly string[] Colours = { "Blue", "Red", "Yellow" };
+
     static readonly ClipDef[] Clips =
     {
         new ClipDef("Idle",    "Warrior/Warrior_Idle.png",    true),
@@ -57,6 +60,7 @@ public static class CharacterAnimationBuilder
         }
 
         BuildController(built);
+        BuildColourVariants();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -64,6 +68,64 @@ public static class CharacterAnimationBuilder
         Debug.Log(string.Format(
             "[Wanderers] Sliced {0} sheets, built {1} clips and PlayerBase.controller in {2}",
             sliced, built.Count, OutRoot));
+    }
+
+    /// Builds one clip set and AnimatorOverrideController per colour. The base
+    /// controller holds the state machine; each variant only swaps clips, so a
+    /// change to the machine is inherited by every colour.
+    static void BuildColourVariants()
+    {
+        var baseController = AssetDatabase.LoadAssetAtPath<AnimatorController>(
+            OutRoot + "PlayerBase.controller");
+        if (baseController == null) { Debug.LogError("[Wanderers] No PlayerBase.controller"); return; }
+
+        foreach (string colour in Colours)
+        {
+            string folder = OutRoot + colour;
+            EnsureFolder(folder);
+
+            var clips = new Dictionary<string, AnimationClip>();
+
+            foreach (ClipDef def in Clips)
+            {
+                string sheet = UnitsRoot + colour + " Units/Warrior/"
+                             + System.IO.Path.GetFileName(def.sheet);
+
+                if (!SliceSheet(sheet)) continue;
+
+                AnimationClip clip = BuildClip(sheet,
+                    folder + "/" + colour + "_" + def.name + ".anim", def.loop);
+
+                if (clip != null) clips[def.name] = clip;
+            }
+
+            var ovr = new AnimatorOverrideController(baseController);
+            ovr.name = colour;
+
+            var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+            ovr.GetOverrides(pairs);
+
+            for (int i = 0; i < pairs.Count; i++)
+            {
+                string key = pairs[i].Key != null ? pairs[i].Key.name : "";
+                foreach (ClipDef def in Clips)
+                {
+                    if (!key.EndsWith("_" + def.name)) continue;
+
+                    AnimationClip replacement;
+                    if (clips.TryGetValue(def.name, out replacement))
+                        pairs[i] = new KeyValuePair<AnimationClip, AnimationClip>(pairs[i].Key, replacement);
+                    break;
+                }
+            }
+            ovr.ApplyOverrides(pairs);
+
+            string path = OutRoot + colour + ".overrideController";
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(ovr, path);
+        }
+
+        Debug.Log("[Wanderers] Built " + Colours.Length + " colour variants");
     }
 
     /// Shared with EnemyAnimationBuilder.

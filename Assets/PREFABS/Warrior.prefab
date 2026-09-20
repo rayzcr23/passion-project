@@ -26,6 +26,8 @@ GameObject:
   - component: {fileID: 8240732805480180369}
   - component: {fileID: 2906332095202521279}
   - component: {fileID: 8658368661826215229}
+  - component: {fileID: 7209583462873529262}
+  - component: {fileID: 4057950512431447925}
   m_Layer: 9
   m_Name: Warrior
   m_TagString: Player
@@ -343,6 +345,7 @@ MonoBehaviour:
   touchHoldToFire: 1
   mouseHoldToFire: 1
   aimDeadzone: 0.35
+  debugDrawAim: 1
 --- !u!114 &792121753185170704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -357,6 +360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 100
+  isBoss: 0
   despawnOnDeath: 0
   despawnDelay: 0.6
 --- !u!114 &9105195392067317132
@@ -377,7 +381,7 @@ MonoBehaviour:
   animatorTrigger: Attack
   origin: {fileID: 6542146264403199364}
   range: 1.4
-  arcDegrees: 120
+  arcDegrees: 180
   damage: 10
   hitLayers:
     serializedVersion: 2
@@ -387,8 +391,8 @@ MonoBehaviour:
   friendlyFire: 1
   windupSeconds: 0.15
   knockback: 4.5
-  debugDraw: 0
-  debugLog: 0
+  debugDraw: 1
+  debugLog: 1
 --- !u!114 &4702837962609108408
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -407,9 +411,9 @@ MonoBehaviour:
   movement: {fileID: 0}
   guard: {fileID: 8658368661826215229}
   m1: {fileID: 9105195392067317132}
-  special: {fileID: 0}
-  super: {fileID: 0}
-  usePointerAim: 1
+  special: {fileID: 7209583462873529262}
+  super: {fileID: 4057950512431447925}
+  aimMode: 0
   specialKey: 113
   superKey: 101
 --- !u!114 &9026735657481644388
@@ -502,3 +506,59 @@ MonoBehaviour:
   frontArcDegrees: 180
   moveSpeedMultiplier: 0.35
   blockShake: 0.12
+--- !u!114 &7209583462873529262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb71fde237ffb8c44a3d5024958df75a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  displayName: Ring of Swords
+  cooldown: 10
+  animatorTrigger: 
+  bladeSprite: {fileID: 21300000, guid: fa65ac1b41328584f9e5e5351c70769d, type: 3}
+  bladeCount: 6
+  radius: 1.4
+  rotationSpeed: 220
+  duration: 6
+  bladeScale: 0.6
+  damage: 5
+  bladeRadius: 0.35
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  hitInterval: 0.6
+  friendlyFire: 0
+--- !u!114 &4057950512431447925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ea3c5165f70a984a88e4f6382f81393, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  displayName: Ground Crack
+  cooldown: 30
+  animatorTrigger: Attack2
+  radius: 4
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  normalPercent: 0.5
+  bossPercent: 0.6
+  friendlyFire: 0
+  effectPrefab: {fileID: 0}
+  effectBursts: 5
+  effectScale: 2.2
+  shake: 0.7

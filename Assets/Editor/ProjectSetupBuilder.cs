@@ -227,6 +227,21 @@ public static class ProjectSetupBuilder
 
         TrimNetworkTransform(root);
 
+        // One colour per brother, assigned by the server at spawn.
+        PlayerColour colour = Ensure<PlayerColour>(root);
+        string[] names = { "Blue", "Red", "Yellow" };
+        var variants = new System.Collections.Generic.List<RuntimeAnimatorController>();
+
+        foreach (string n in names)
+        {
+            var ovr = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
+                "Assets/ANIMATIONS/" + n + ".overrideController");
+
+            if (ovr != null) variants.Add(ovr);
+            else Debug.LogWarning("[Wanderers] Missing " + n + ".overrideController - run Build Character Animations");
+        }
+        colour.variants = variants.ToArray();
+
         AimInput aim = Ensure<AimInput>(root);
         aim.aimOrigin = root.transform;
         aim.debugDrawAim = true;          // magenta ray = live aim direction
