@@ -94,6 +94,17 @@ public static class ProjectSetupBuilder
             Debug.Log("[Wanderers] Added CameraFollow to '" + cam.name + "'");
         }
 
+        // Top-down 2D wants sprites sorted by Y, not Z: a character below a
+        // building should draw in front of it, above should draw behind. Set on
+        // the camera rather than GraphicsSettings so it lives in the scene.
+        if (cam.transparencySortMode != TransparencySortMode.CustomAxis)
+        {
+            cam.transparencySortMode = TransparencySortMode.CustomAxis;
+            cam.transparencySortAxis = new Vector3(0f, 1f, 0f);
+            changed = true;
+            Debug.Log("[Wanderers] Camera now sorts sprites by Y axis");
+        }
+
         if (!cam.orthographic)
         {
             cam.orthographic = true;
