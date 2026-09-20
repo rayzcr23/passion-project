@@ -17,11 +17,9 @@ MonoBehaviour:
   - Welcome traveler
   - go test out your abilities by killing 10 sheep
   - After you are done come meet me here
-  startsQuest: {fileID: 11400000, guid: 7cd45d47f7350384d9dbe39a0e63fd2c, type: 2}
+  startsQuest: {fileID: 11400000, guid: 381a9540422ed484c8501a9a48121562, type: 2}
   inProgressLines:
   - you have not killed enough sheep
   completedLines:
-  - Well Done Traveler
-  - Now you can press Q for a ring of swords ability or you can press E to use the
-    stomp ability
-  - Now test your abilities out by killing 10 more sheep
+  - well done
+  - Now feel free to talk to some village members

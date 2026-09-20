@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
+  m_Name: Villagers_Accusation
+  m_EditorClassIdentifier: 
+  speakerName: villager
+  lines:
+  - What have you done?!
+  - Those sheep were the whole winter. Every one of them.
+  - Who told you to do this? WHO?
+  - ...he is gone. Of course he is gone.
+  startsQuest: {fileID: 0}
+  inProgressLines: []
+  completedLines: []

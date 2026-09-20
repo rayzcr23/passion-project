@@ -204,6 +204,29 @@ public static class ProjectSetupBuilder
 
         qm.quests = found.ToArray();
         EditorUtility.SetDirty(qm);
+
+        // Quest state is keyed by questId, so two assets sharing one id become a
+        // single entry wearing two hats: whichever definition loads first decides
+        // the title and the required count, and the other silently does nothing.
+        var seen = new System.Collections.Generic.Dictionary<string, QuestDefinition>();
+
+        foreach (QuestDefinition q in found)
+        {
+            if (string.IsNullOrEmpty(q.questId))
+            {
+                Debug.LogError("[Wanderers] " + q.name + " has a blank questId.", q);
+                continue;
+            }
+
+            QuestDefinition other;
+            if (seen.TryGetValue(q.questId, out other))
+                Debug.LogError("[Wanderers] '" + q.name + "' and '" + other.name +
+                               "' share questId '" + q.questId + "'. They will behave as " +
+                               "one quest. Give each a unique id.", q);
+            else
+                seen[q.questId] = q;
+        }
+
         Debug.Log("[Wanderers] QuestSystem knows " + found.Count + " quest(s)");
 
         if (Object.FindFirstObjectByType<DialogueUI>() == null)
