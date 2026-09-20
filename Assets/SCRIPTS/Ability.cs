@@ -11,11 +11,16 @@ public abstract class Ability : NetworkBehaviour
     public string displayName = "Ability";
     public float cooldown = 1f;
 
+    [Tooltip("POW required. 0 is free. The meter is server-authoritative, so this " +
+         "is checked locally for responsiveness and again before the ability runs.")]
+    public float powerCost = 0f;
+
     [Header("Animation (optional)")]
     public string animatorTrigger = "";
 
     float nextReadyTime;
     protected Animator anim;
+    protected PowerMeter meter;
 
     public bool IsReady => Time.time >= nextReadyTime;
     public float CooldownRemaining => Mathf.Max(0f, nextReadyTime - Time.time);
@@ -23,13 +28,20 @@ public abstract class Ability : NetworkBehaviour
     protected virtual void Awake()
     {
         anim = GetComponentInParent<Animator>();
+        meter = GetComponentInParent<PowerMeter>();
     }
+
+    /// Cooldown and POW both ready.
+    public bool CanAfford => powerCost <= 0f || (meter != null && meter.Has(powerCost));
 
 
     /// Called by AbilityLoadout on the owning client only.
     public void TryActivate(Vector2 aimDirection)
     {
         if (!IsOwner || !IsReady) return;
+
+        // Predicted locally so a starved meter does not eat the cooldown.
+        if (!CanAfford) return;
 
         // Predicted locally so the cooldown UI reacts instantly; the server
         // re-checks nothing here because a stale cooldown is harmless in co-op PvE.
@@ -41,6 +53,12 @@ public abstract class Ability : NetworkBehaviour
     [Rpc(SendTo.Server)]
     void ActivateServerRpc(Vector2 aimDirection)
     {
+        // The client only asked. The server decides whether it could pay.
+        if (powerCost > 0f)
+        {
+            if (meter == null || !meter.ServerTrySpend(powerCost)) return;
+        }
+
         OnServerActivate(aimDirection);
         PlayEffectsRpc(aimDirection);
     }

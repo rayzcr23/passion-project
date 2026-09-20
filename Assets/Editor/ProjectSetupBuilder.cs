@@ -411,23 +411,34 @@ public static class ProjectSetupBuilder
         ring.hitLayers = (1 << enemyLayer);
         ring.bladeSprite = AssetDatabase.LoadAssetAtPath<Sprite>(ArrowSprite);
 
-        // Super: ground crack (PRD - percentage damage, 50% normal / 60% boss).
-        GroundCrackAbility crack = Ensure<GroundCrackAbility>(root);
-        crack.displayName = "Ground Crack";
-        crack.cooldown = 30f;
-        crack.animatorTrigger = "Attack2";
-        crack.radius = 4f;
-        crack.normalPercent = 0.5f;
-        crack.bossPercent = 0.6f;
-        crack.hitLayers = (1 << enemyLayer);
-        crack.effectPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+        // Super: Hollow Purple. Replaces the ground crack - a corridor rather
+        // than a ring, so it rewards lining enemies up.
+        var oldCrack = root.GetComponent<GroundCrackAbility>();
+        if (oldCrack != null) Object.DestroyImmediate(oldCrack, true);
+
+        HollowPurpleAbility purple = Ensure<HollowPurpleAbility>(root);
+        purple.displayName = "Hollow Purple";
+        purple.cooldown = 1f;                 // POW is the real gate, not time
+        purple.powerCost = 100f;              // a full meter
+        purple.animatorTrigger = "Attack2";
+        purple.length = 22f;
+        purple.width = 2.4f;
+        purple.hitLayers = (1 << enemyLayer);
+        purple.oneShotsNonBosses = true;
+        purple.impactPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+
+        PowerMeter meter = Ensure<PowerMeter>(root);
+        meter.max = 100f;
+
+        // The ring is a mid-cost spender now, so POW has two sinks.
+        ring.powerCost = 35f;
 
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
         loadout.aimMode = AbilityLoadout.AimMode.Facing;   // hitbox sits in front of the sprite
         loadout.special = ring;                            // Q
-        loadout.super = crack;                             // E
+        loadout.super = purple;                            // E
         loadout.death = death;
         loadout.guard = guard;
 

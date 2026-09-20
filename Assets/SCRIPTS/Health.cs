@@ -78,6 +78,9 @@ public class Health : NetworkBehaviour
         }
 
         current.Value = Mathf.Max(0, current.Value - amount);
+
+        PowerMeter.ServerAwardForDamage(attackerClientId, this, amount);
+
         if (current.Value == 0) ServerDie();
     }
 
