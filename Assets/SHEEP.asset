@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889fc46e917b177438ac8c52a7bc8906, type: 3}
   m_Name: SHEEP
   m_EditorClassIdentifier: 
-  questId: find_the_blacksmith
-  title: Find the Blacksmith
-  description: 
+  questId: kill some sheep
+  title: kill some sheep
+  description: Welcome traveler, go test out your abilities by killing 10 sheep.
   objective: 1
-  targetId: goblin
-  requiredCount: 3
-  completionText: Well done.
+  targetId: sheep
+  requiredCount: 10
+  completionText: well done traveler.
   nextQuest: {fileID: 0}

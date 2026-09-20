@@ -148,10 +148,21 @@ public class QuestManager : NetworkBehaviour
         ServerCompleteTalkTo(npcId.ToString());
     }
 
-    /// Active quests, for the log display.
-    public List<string> ActiveSummaries()
+    /// One active quest, shaped for display. Counted objectives carry the numbers
+    /// so the log can draw a bar instead of baking them into a string.
+    public struct ActiveQuest
     {
-        var lines = new List<string>();
+        public string title;
+        public bool counted;
+        public int counter;
+        public int required;
+
+        public float Fraction => required <= 0 ? 0f : Mathf.Clamp01(counter / (float)required);
+    }
+
+    public List<ActiveQuest> ActiveQuests()
+    {
+        var result = new List<ActiveQuest>();
 
         for (int i = 0; i < Entries.Count; i++)
         {
@@ -159,8 +170,23 @@ public class QuestManager : NetworkBehaviour
             if (p.state != 1) continue;
 
             QuestDefinition def = Find(p.id.ToString());
-            lines.Add(def != null ? def.ProgressText(p.counter) : p.id.ToString());
+
+            if (def == null)
+            {
+                result.Add(new ActiveQuest { title = p.id.ToString(), counted = false });
+                continue;
+            }
+
+            bool counted = def.objective == QuestDefinition.Objective.Kill && def.requiredCount > 0;
+
+            result.Add(new ActiveQuest
+            {
+                title = def.title,
+                counted = counted,
+                counter = Mathf.Min(p.counter, def.requiredCount),
+                required = def.requiredCount
+            });
         }
-        return lines;
+        return result;
     }
 }

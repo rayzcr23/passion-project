@@ -110,18 +110,58 @@ public class DialogueUI : MonoBehaviour
         QuestManager qm = QuestManager.Instance;
         if (qm == null || qm.Entries == null) return;
 
-        var summaries = qm.ActiveSummaries();
-        if (summaries.Count == 0) return;
+        var active = qm.ActiveQuests();
+        if (active.Count == 0) return;
 
-        float width = 280f;
-        var rect = new Rect(Screen.width - width - 14f, 120f, width, 28f + summaries.Count * 20f);
+        const float rowPlain = 22f;
+        const float rowCounted = 40f;
+
+        float width = 300f;
+        float height = 30f;
+        foreach (var q in active) height += q.counted ? rowCounted : rowPlain;
+
+        var rect = new Rect(Screen.width - width - 14f, 120f, width, height);
 
         GUI.Box(rect, GUIContent.none, box);
         GUI.Label(new Rect(rect.x + 12f, rect.y + 6f, width - 24f, 20f), "Quests  [J]", name_);
 
-        for (int i = 0; i < summaries.Count; i++)
-            GUI.Label(new Rect(rect.x + 12f, rect.y + 28f + i * 20f, width - 24f, 20f),
-                      "- " + summaries[i], body);
+        float y = rect.y + 28f;
+
+        foreach (var q in active)
+        {
+            GUI.Label(new Rect(rect.x + 12f, y, width - 24f, 20f), q.title, body);
+
+            if (!q.counted) { y += rowPlain; continue; }
+
+            var bar = new Rect(rect.x + 12f, y + 20f, width - 70f, 9f);
+            DrawBar(bar, q.Fraction);
+
+            GUI.Label(new Rect(bar.xMax + 6f, y + 15f, 50f, 20f),
+                      q.counter + "/" + q.required, body);
+
+            y += rowCounted;
+        }
+    }
+
+    /// Tints the built-in white texture rather than allocating bar textures.
+    static void DrawBar(Rect rect, float fraction)
+    {
+        Color previous = GUI.color;
+
+        GUI.color = new Color(0f, 0f, 0f, 0.55f);
+        GUI.DrawTexture(rect, Texture2D.whiteTexture);
+
+        if (fraction > 0f)
+        {
+            // Green as it fills, so a nearly-done quest reads at a glance.
+            GUI.color = Color.Lerp(new Color(0.85f, 0.55f, 0.2f),
+                                   new Color(0.35f, 0.85f, 0.4f), fraction);
+
+            var fill = new Rect(rect.x, rect.y, rect.width * fraction, rect.height);
+            GUI.DrawTexture(fill, Texture2D.whiteTexture);
+        }
+
+        GUI.color = previous;
     }
 
     static void EnsureStyles()

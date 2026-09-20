@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
   m_Name: first encounter
   m_EditorClassIdentifier: 
-  speakerName: Villager
+  speakerName: wise old man
   lines:
-  - The goblins came at dusk.
-  - Drive them off and the blacksmith will speak with you.
-  startsQuest: {fileID: 0}
+  - Welcome traveler
+  - go test out your abilities by killing 10 sheep
+  - After you are done come meet me here
+  startsQuest: {fileID: 11400000, guid: 7cd45d47f7350384d9dbe39a0e63fd2c, type: 2}
   inProgressLines:
-  - They are still out there.
+  - you have not killed enough sheep
   completedLines:
-  - You have our thanks.
+  - good boy
