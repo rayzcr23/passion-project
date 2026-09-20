@@ -25,6 +25,7 @@ public abstract class Ability : NetworkBehaviour
         anim = GetComponentInParent<Animator>();
     }
 
+
     /// Called by AbilityLoadout on the owning client only.
     public void TryActivate(Vector2 aimDirection)
     {

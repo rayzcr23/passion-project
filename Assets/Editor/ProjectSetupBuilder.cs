@@ -15,6 +15,7 @@ public static class ProjectSetupBuilder
     const string EnemyPrefab = "Assets/PREFABS/Goblin.prefab";
     const string EnemyController = "Assets/ANIMATIONS/Goblin.controller";
     const string DeathPoofPrefab = "Assets/PREFABS/DeathPoof.prefab";
+    const string ArrowSprite = "Assets/Tiny Swords (Free Pack)/Tiny Swords (Free Pack)/Units/Blue Units/Archer/Arrow.png";
     const string GoblinSheet = "Assets/Tiny Swords/Tiny Swords (Update 010)/Factions/Goblins/Troops/Torch/Red/Torch_Red.png";
     const string Controller = "Assets/ANIMATIONS/PlayerBase.controller";
     const string EnemyLayer = "Enemy";
@@ -280,10 +281,34 @@ public static class ProjectSetupBuilder
         guard.blockAllDirections = true;
         guard.moveSpeedMultiplier = 0.35f;
 
+        // Special: ring of small swords (PRD).
+        OrbitRingAbility ring = Ensure<OrbitRingAbility>(root);
+        ring.displayName = "Ring of Swords";
+        ring.cooldown = 10f;
+        ring.duration = 6f;
+        ring.damage = 5;
+        ring.radius = 1.4f;
+        ring.bladeCount = 6;
+        ring.hitLayers = (1 << enemyLayer);
+        ring.bladeSprite = AssetDatabase.LoadAssetAtPath<Sprite>(ArrowSprite);
+
+        // Super: ground crack (PRD - percentage damage, 50% normal / 60% boss).
+        GroundCrackAbility crack = Ensure<GroundCrackAbility>(root);
+        crack.displayName = "Ground Crack";
+        crack.cooldown = 30f;
+        crack.animatorTrigger = "Attack2";
+        crack.radius = 4f;
+        crack.normalPercent = 0.5f;
+        crack.bossPercent = 0.6f;
+        crack.hitLayers = (1 << enemyLayer);
+        crack.effectPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
         loadout.aimMode = AbilityLoadout.AimMode.Facing;   // hitbox sits in front of the sprite
+        loadout.special = ring;                            // Q
+        loadout.super = crack;                             // E
         loadout.death = death;
         loadout.guard = guard;
 

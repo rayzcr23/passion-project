@@ -8,6 +8,9 @@ using UnityEngine;
 public class Health : NetworkBehaviour
 {
     public int maxHealth = 100;
+
+    [Tooltip("Bosses take the Super's boss percentage instead of the normal one.")]
+    public bool isBoss = false;
     public bool despawnOnDeath = true;      // true for enemies, false for players
 
     [Tooltip("Server waits this long before removing the body, so DeathEffect has " +
