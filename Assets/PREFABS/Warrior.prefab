@@ -362,6 +362,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 100
   isBoss: 0
+  creatureId: 
   despawnOnDeath: 0
   despawnDelay: 0.6
 --- !u!114 &9105195392067317132

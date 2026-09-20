@@ -152,6 +152,7 @@ public static class CritterBuilder
 
         Health hp = Ensure<Health>(go);
         hp.maxHealth = 12;
+        hp.creatureId = "sheep";                 // Kill objectives match on this, exactly
         hp.despawnOnDeath = true;
         hp.despawnDelay = 0.6f;
 

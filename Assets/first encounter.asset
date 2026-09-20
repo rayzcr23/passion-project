@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
+  m_Name: first encounter
+  m_EditorClassIdentifier: 
+  speakerName: Villager
+  lines:
+  - The goblins came at dusk.
+  - Drive them off and the blacksmith will speak with you.
+  startsQuest: {fileID: 0}
+  inProgressLines:
+  - They are still out there.
+  completedLines:
+  - You have our thanks.

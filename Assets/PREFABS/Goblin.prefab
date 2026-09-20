@@ -300,6 +300,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
   isBoss: 0
+  creatureId: goblin
   despawnOnDeath: 1
   despawnDelay: 0.6
 --- !u!114 &5635219322313204071

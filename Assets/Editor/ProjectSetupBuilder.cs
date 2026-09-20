@@ -35,6 +35,7 @@ public static class ProjectSetupBuilder
 
         SetupPlayer(enemyLayer, playerLayer);
         SetupGoblin(enemyLayer);
+        WarnAboutMissingCreatureIds();
         CleanNetworkPrefabs();
         FixSceneCamera();
         FixSessionHud();
@@ -146,6 +147,32 @@ public static class ProjectSetupBuilder
 
         EditorSceneManager.MarkSceneDirty(nm.gameObject.scene);
         Debug.Log("[Wanderers] Added SessionHUD for online play");
+    }
+
+    /// A killable creature with no creatureId reports nothing when it dies, so
+    /// Kill objectives silently never advance. That is invisible at runtime, so
+    /// flag it here instead.
+    static void WarnAboutMissingCreatureIds()
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/PREFABS" });
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (go == null) continue;
+
+            var health = go.GetComponent<Health>();
+            if (health == null) continue;
+
+            // Players are deliberately blank - they are not quest targets.
+            bool isCreature = go.GetComponent<EnemyBrain>() != null
+                           || go.GetComponent<SheepBrain>() != null;
+
+            if (isCreature && string.IsNullOrEmpty(health.creatureId))
+                Debug.LogWarning("[Wanderers] " + go.name + " has no creatureId, so killing it " +
+                                 "will never advance a Kill quest.", go);
+        }
     }
 
     /// QuestManager needs a NetworkObject of its own: quest state is replicated,
