@@ -128,8 +128,14 @@ public static class CharacterAnimationBuilder
         Debug.Log("[Wanderers] Built " + Colours.Length + " colour variants");
     }
 
-    /// Shared with EnemyAnimationBuilder.
+    /// Shared with EnemyAnimationBuilder and CritterBuilder.
     public static bool SliceSheet(string path)
+    {
+        return SliceSheet(path, Cell);
+    }
+
+    /// Not every sheet is 192: the sheep are 128.
+    public static bool SliceSheet(string path, int cell)
     {
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) { Debug.LogWarning("[Wanderers] Not found: " + path); return false; }
@@ -137,8 +143,8 @@ public static class CharacterAnimationBuilder
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         if (tex == null) return false;
 
-        int cols = tex.width / Cell;
-        int rows = Mathf.Max(1, tex.height / Cell);
+        int cols = tex.width / cell;
+        int rows = Mathf.Max(1, tex.height / cell);
 
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Multiple;
@@ -157,7 +163,7 @@ public static class CharacterAnimationBuilder
                 var m = new SpriteMetaData();
                 m.name = string.Format("{0}_{1}", baseName, r * cols + c);
                 // Texture space starts bottom-left, so walk rows from the top.
-                m.rect = new Rect(c * Cell, tex.height - (r + 1) * Cell, Cell, Cell);
+                m.rect = new Rect(c * cell, tex.height - (r + 1) * cell, cell, cell);
                 m.alignment = (int)SpriteAlignment.Center;
                 m.pivot = new Vector2(0.5f, 0.5f);
                 meta.Add(m);
