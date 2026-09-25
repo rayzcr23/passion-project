@@ -320,15 +320,40 @@ public static class StoryBuilder
         return data;
     }
 
+    /// Loads only - never slices.
+    ///
+    /// This used to call SliceSheet, which defaults to 192px cells. The sheep
+    /// sheets are 128, so every run re-sliced them at the wrong size, reminted
+    /// every sub-sprite id and turned all the placed sheep invisible. A story
+    /// script has no business reshaping someone else's texture import settings.
     static Sprite FirstSprite(string sheetPath)
     {
-        CharacterAnimationBuilder.SliceSheet(sheetPath);
-        AssetDatabase.Refresh();
-
         Object[] all = AssetDatabase.LoadAllAssetsAtPath(sheetPath);
-        foreach (Object o in all) { var s = o as Sprite; if (s != null) return s; }
 
-        return AssetDatabase.LoadAssetAtPath<Sprite>(sheetPath);
+        Sprite best = null;
+        int bestIndex = int.MaxValue;
+
+        foreach (Object o in all)
+        {
+            var sprite = o as Sprite;
+            if (sprite == null) continue;
+
+            int underscore = sprite.name.LastIndexOf('_');
+            int index;
+            if (!int.TryParse(underscore >= 0 ? sprite.name.Substring(underscore + 1) : "0", out index))
+                index = 0;
+
+            if (index < bestIndex) { bestIndex = index; best = sprite; }
+        }
+
+        if (best != null) return best;
+
+        Sprite single = AssetDatabase.LoadAssetAtPath<Sprite>(sheetPath);
+        if (single == null)
+            Debug.LogWarning("[Wanderers] No sprite in " + sheetPath +
+                             " - slice it first (Build Sheep / Build Character Animations).");
+
+        return single;
     }
 
     static void EnsureFolder(string path)

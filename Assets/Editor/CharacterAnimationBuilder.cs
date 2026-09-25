@@ -143,6 +143,19 @@ public static class CharacterAnimationBuilder
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         if (tex == null) return false;
 
+        // A sheet whose dimensions are not a multiple of the cell is being sliced
+        // at the wrong size. Slicing it anyway remints every sub-sprite id and
+        // orphans every reference - which is exactly how the sheep, on 128px
+        // cells, kept vanishing when something sliced them at the 192 default.
+        if (tex.width % cell != 0 || tex.height % cell != 0)
+        {
+            Debug.LogError(string.Format(
+                "[Wanderers] {0} is {1}x{2}, not a multiple of {3}. Refusing to slice - " +
+                "pass the right cell size.",
+                System.IO.Path.GetFileName(path), tex.width, tex.height, cell));
+            return false;
+        }
+
         int cols = tex.width / cell;
         int rows = Mathf.Max(1, tex.height / cell);
 
