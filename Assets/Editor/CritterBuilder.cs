@@ -3,6 +3,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// Builds the passive sheep: clips, controller and prefab.
@@ -38,6 +39,8 @@ public static class CritterBuilder
         BuildController(idle, move);
         BuildPrefab();
 
+        RepairSceneInstances();
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("[Wanderers] Sheep built");
@@ -48,7 +51,13 @@ public static class CritterBuilder
         List<Sprite> frames = SortedSprites(sheetPath);
         if (frames.Count == 0) { Debug.LogWarning("[Wanderers] No sprites in " + sheetPath); return null; }
 
-        var clip = new AnimationClip { frameRate = FrameRate };
+        // Reuse the asset if it exists. CreateAsset over a live path mints a new
+        // GUID, which silently breaks every prefab and controller pointing at it.
+        var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+        bool isNewClip = clip == null;
+        if (isNewClip) clip = new AnimationClip();
+
+        clip.frameRate = FrameRate;
 
         var binding = new EditorCurveBinding
         {
@@ -67,13 +76,30 @@ public static class CritterBuilder
         settings.loopTime = true;
         AnimationUtility.SetAnimationClipSettings(clip, settings);
 
-        AssetDatabase.CreateAsset(clip, clipPath);
+        if (isNewClip) AssetDatabase.CreateAsset(clip, clipPath);
+        else EditorUtility.SetDirty(clip);
+
         return clip;
     }
 
     static void BuildController(AnimationClip idle, AnimationClip move)
     {
-        AssetDatabase.DeleteAsset(ControllerPath);
+        // Same reasoning as the clips: keep the existing controller so its GUID,
+        // and every reference to it, survives a rebuild.
+        var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+        if (existing != null)
+        {
+            foreach (var layer in existing.layers)
+                foreach (var state in layer.stateMachine.states)
+                {
+                    if (state.state.name == "Idle") state.state.motion = idle;
+                    if (state.state.name == "Move") state.state.motion = move;
+                }
+
+            EditorUtility.SetDirty(existing);
+            return;
+        }
+
         AnimatorController c = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
 
         c.AddParameter("Speed", AnimatorControllerParameterType.Float);
@@ -114,7 +140,10 @@ public static class CritterBuilder
 
         var sr = Ensure<SpriteRenderer>(go);
         List<Sprite> frames = SortedSprites(IdleSheet);
-        if (sr.sprite == null && frames.Count > 0) sr.sprite = frames[0];
+
+        // Assigned unconditionally: a Missing reference reads as null here, and
+        // leaving it alone is exactly how a broken prefab stays broken.
+        if (frames.Count > 0) sr.sprite = frames[0];
         sr.sortingOrder = 1;
 
         var animator = Ensure<Animator>(go);
@@ -181,6 +210,40 @@ public static class CritterBuilder
 
         if (isNew) Object.DestroyImmediate(go);
         else PrefabUtility.UnloadPrefabContents(go);
+    }
+
+    /// Sheep already placed in the scene keep whatever they were saved with, so a
+    /// rebuild has to go and fix them too.
+    static void RepairSceneInstances()
+    {
+        var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+        List<Sprite> frames = SortedSprites(IdleSheet);
+        Sprite first = frames.Count > 0 ? frames[0] : null;
+
+        int repaired = 0;
+
+        foreach (SheepBrain brain in Object.FindObjectsByType<SheepBrain>(FindObjectsSortMode.None))
+        {
+            bool changed = false;
+
+            var sr = brain.GetComponent<SpriteRenderer>();
+            if (sr != null && sr.sprite == null && first != null) { sr.sprite = first; changed = true; }
+
+            var anim = brain.GetComponent<Animator>();
+            if (anim != null && anim.runtimeAnimatorController == null && controller != null)
+            {
+                anim.runtimeAnimatorController = controller;
+                changed = true;
+            }
+
+            if (changed) { EditorUtility.SetDirty(brain.gameObject); repaired++; }
+        }
+
+        if (repaired > 0)
+        {
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Debug.Log("[Wanderers] Repaired " + repaired + " sheep in the scene");
+        }
     }
 
     static List<Sprite> SortedSprites(string path)

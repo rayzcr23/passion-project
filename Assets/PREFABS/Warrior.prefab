@@ -30,6 +30,7 @@ GameObject:
   - component: {fileID: 1025883747682959137}
   - component: {fileID: 5498279514177854505}
   - component: {fileID: 7789559839366044460}
+  - component: {fileID: 2809974114724371410}
   m_Layer: 9
   m_Name: Warrior
   m_TagString: Player
@@ -241,6 +242,7 @@ MonoBehaviour:
   death: {fileID: 9026735657481644388}
   knockback: {fileID: 8240732805480180369}
   guard: {fileID: 8658368661826215229}
+  mount: {fileID: 0}
   faceAimAlways: 0
   facingDirection: 1
 --- !u!114 &8053190018001894926
@@ -603,3 +605,29 @@ MonoBehaviour:
   max: 100
   gainPerDamageDealt: 1.6
   gainPerDamageTaken: 0.8
+--- !u!114 &2809974114724371410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cebfb4f0f8cfe045ba9090c69bbd393, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  toggleKey: 114
+  speedMultiplier: 2.4
+  mountFrames:
+  - {fileID: -5027220119692830953, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
+  - {fileID: 6860843237176026257, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
+  - {fileID: -4737963809079716724, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
+  - {fileID: 7636839774502669027, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
+  - {fileID: 5661645519548905162, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
+  - {fileID: 2725343537496752768, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
+  framesPerSecond: 10
+  mountOffset: {x: 0, y: -0.28, z: 0}
+  mountScale: 1.15
+  riderLift: 0.22
