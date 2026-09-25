@@ -40,9 +40,15 @@ public static class ProjectSetupBuilder
         FixSceneCamera();
         FixSessionHud();
 
+        // Same reasoning as StoryBuilder: scene edits that are only dirtied are
+        // invisible to a build and to anyone reading the scene file.
+        UnityEngine.SceneManagement.Scene active = EditorSceneManager.GetActiveScene();
+        if (active.isDirty) EditorSceneManager.SaveScene(active);
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log(string.Format("[Wanderers] Gameplay wired. Enemy={0}, Player={1}", enemyLayer, playerLayer));
+        Debug.Log(string.Format("[Wanderers] Gameplay wired in '{0}'. Enemy={1}, Player={2}",
+            active.name, enemyLayer, playerLayer));
     }
 
     // ---------------------------------------------------------------- layers

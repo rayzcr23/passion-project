@@ -93,7 +93,12 @@ public static class StoryBuilder
 
         ProjectSetupBuilder.RegisterAllQuests();
 
+        // Saving, not just dirtying. Leaving it unsaved means the objects exist in
+        // memory only: the scene file has no RewardSheep, the trigger has no
+        // afterDialogue, and a build ships none of it.
         EditorSceneManager.MarkSceneDirty(oldMan.scene);
+        EditorSceneManager.SaveScene(oldMan.scene);
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
