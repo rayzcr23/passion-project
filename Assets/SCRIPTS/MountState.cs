@@ -19,11 +19,8 @@ public class MountState : NetworkBehaviour
     [Header("Visual")]
     public Sprite[] mountFrames;
     public float framesPerSecond = 10f;
-    public Vector3 mountOffset = new Vector3(0f, -0.28f, 0f);
-    public float mountScale = 1.15f;
-
-    [Tooltip("How far the rider is lifted so they sit on the sheep rather than in it.")]
-    public float riderLift = 0.22f;
+    public Vector3 mountOffset = new Vector3(0f, -0.45f, 0f);
+    public float mountScale = 1.5f;
 
     readonly NetworkVariable<bool> owned = new NetworkVariable<bool>();
     readonly NetworkVariable<bool> riding = new NetworkVariable<bool>();
@@ -35,9 +32,9 @@ public class MountState : NetworkBehaviour
     public float SpeedScale => riding.Value ? speedMultiplier : 1f;
 
     GameObject visual;
+    SpriteRenderer mountSprite;
     SpriteRenderer body;
     PlayerDeath death;
-    Vector3 bodyRestPosition;
 
     void Awake()
     {
@@ -70,6 +67,13 @@ public class MountState : NetworkBehaviour
         if (!owned.Value) return;
 
         if (Input.GetKeyDown(toggleKey)) SetRidingRpc(!riding.Value);
+    }
+
+    void LateUpdate()
+    {
+        // The mount is a separate renderer, so the body's flip does not reach it.
+        // Runs on every client, since facing is replicated onto body.flipX.
+        if (mountSprite != null && body != null) mountSprite.flipX = body.flipX;
     }
 
     // ------------------------------------------------------------ server side
@@ -110,7 +114,8 @@ public class MountState : NetworkBehaviour
         visual.transform.localPosition = mountOffset;
         visual.transform.localScale = Vector3.one * mountScale;
 
-        var sr = visual.AddComponent<SpriteRenderer>();
+        mountSprite = visual.AddComponent<SpriteRenderer>();
+        SpriteRenderer sr = mountSprite;
         if (body != null) sr.sortingOrder = body.sortingOrder - 1;   // under the rider
 
         if (mountFrames != null && mountFrames.Length > 0)
@@ -125,12 +130,10 @@ public class MountState : NetworkBehaviour
             book.fadeOutFraction = 0f;
         }
 
-        if (body != null)
-        {
-            bodyRestPosition = body.transform.localPosition;
-            // Only the sprite lifts - moving the root would move the collider too.
-            body.transform.localPosition = bodyRestPosition + new Vector3(0f, riderLift, 0f);
-        }
+        // Deliberately does not move the rider. body is the SpriteRenderer on the
+        // player ROOT, so nudging body.transform moves the player - and restoring
+        // it on dismount teleported them back to wherever they climbed on. The
+        // sheep sits lower via mountOffset instead.
     }
 
     void ClearVisual()
@@ -139,8 +142,7 @@ public class MountState : NetworkBehaviour
         {
             Destroy(visual);
             visual = null;
-
-            if (body != null) body.transform.localPosition = bodyRestPosition;
+            mountSprite = null;
         }
     }
 }

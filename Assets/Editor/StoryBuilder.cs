@@ -261,6 +261,10 @@ public static class StoryBuilder
 
         sheep.transform.position = near + new Vector3(2.6f, -1.6f, 0f);
 
+        // The sheep sheet is 128px against the characters' 192, so at 1:1 it reads
+        // as a lamb standing next to a knight.
+        sheep.transform.localScale = Vector3.one * 1.6f;
+
         var sr = sheep.GetComponent<SpriteRenderer>();
         if (sr == null) sr = sheep.AddComponent<SpriteRenderer>();
 
