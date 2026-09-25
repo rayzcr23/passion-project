@@ -89,6 +89,8 @@ public static class StoryBuilder
         string triggerQuest = FinalQuestId(oldMan, reveal) ?? sheepQuest.questId;
         EnsureTrigger(triggerQuest, villagers, oldMan, accusation);
 
+        EnsureRewardSheep(oldMan.transform.position, trial.questId);
+
         ProjectSetupBuilder.RegisterAllQuests();
 
         EditorSceneManager.MarkSceneDirty(oldMan.scene);
@@ -235,6 +237,48 @@ public static class StoryBuilder
         trigger.announcement = announcement;
 
         EditorUtility.SetDirty(trigger);
+    }
+
+    /// The sheep the villagers hand over once you have proved yourself. It waits
+    /// hidden until the trial is done, then stands in the village to be claimed.
+    static void EnsureRewardSheep(Vector3 near, string trialQuestId)
+    {
+        GameObject sheep = GameObject.Find("RewardSheep");
+        if (sheep == null) sheep = new GameObject("RewardSheep");
+
+        sheep.transform.position = near + new Vector3(2.6f, -1.6f, 0f);
+
+        var sr = sheep.GetComponent<SpriteRenderer>();
+        if (sr == null) sr = sheep.AddComponent<SpriteRenderer>();
+        if (sr.sprite == null)
+            sr.sprite = FirstSprite("Assets/Tiny Swords/Tiny Swords (Update 010)/Resources/Sheep/HappySheep_Idle.png");
+        sr.sortingOrder = 1;
+
+        // It is claimed over the network, so it needs an identity of its own.
+        if (sheep.GetComponent<Unity.Netcode.NetworkObject>() == null)
+            sheep.AddComponent<Unity.Netcode.NetworkObject>();
+
+        var rideable = sheep.GetComponent<RideableMount>();
+        if (rideable == null) rideable = sheep.AddComponent<RideableMount>();
+        rideable.grantToEveryone = true;      // all three brothers ride
+
+        EditorUtility.SetDirty(sheep);
+
+        // Its own trigger, so the reward follows the trial rather than the betrayal.
+        GameObject triggerGo = GameObject.Find("RewardSheepTrigger");
+        if (triggerGo == null) triggerGo = new GameObject("RewardSheepTrigger");
+
+        var trigger = triggerGo.GetComponent<QuestTrigger>();
+        if (trigger == null) trigger = triggerGo.AddComponent<QuestTrigger>();
+
+        trigger.questId = trialQuestId;
+        trigger.when = QuestTrigger.When.Completed;
+        trigger.activate = new[] { sheep };
+        trigger.deactivate = new GameObject[0];
+        trigger.announcement = null;
+
+        EditorUtility.SetDirty(trigger);
+        Debug.Log("[Wanderers] Reward sheep appears when '" + trialQuestId + "' completes");
     }
 
     static QuestDefinition EnsureQuest(string id, string title, string target, int count)

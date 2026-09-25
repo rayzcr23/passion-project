@@ -450,6 +450,12 @@ public static class ProjectSetupBuilder
         PowerMeter meter = Ensure<PowerMeter>(root);
         meter.max = 100f;
 
+        // The sheep mount. Frames come from the same bouncing sheet the critter
+        // uses, so the thing you ride animates like the thing you killed.
+        MountState mount = Ensure<MountState>(root);
+        mount.speedMultiplier = 2.4f;
+        mount.mountFrames = LoadSheepFrames();
+
         // The ring is a mid-cost spender now, so POW has two sinks.
         ring.powerCost = 35f;
 
@@ -592,6 +598,33 @@ public static class ProjectSetupBuilder
         bar.offset = new Vector3(0f, 0.85f, 0f);
         bar.width = 0.7f;
         bar.height = 0.1f;
+    }
+
+    static Sprite[] LoadSheepFrames()
+    {
+        const string sheet = "Assets/Tiny Swords/Tiny Swords (Update 010)/Resources/Sheep/HappySheep_Bouncing.png";
+
+        Object[] all = AssetDatabase.LoadAllAssetsAtPath(sheet);
+        var frames = new System.Collections.Generic.List<Sprite>();
+
+        foreach (Object o in all) { var s = o as Sprite; if (s != null) frames.Add(s); }
+
+        if (frames.Count == 0)
+        {
+            Debug.LogWarning("[Wanderers] Sheep sheet not sliced yet - run Build Sheep first.");
+            return new Sprite[0];
+        }
+
+        frames.Sort((a, b) =>
+        {
+            int ia = a.name.LastIndexOf('_'), ib = b.name.LastIndexOf('_');
+            int na, nb;
+            int.TryParse(ia >= 0 ? a.name.Substring(ia + 1) : "0", out na);
+            int.TryParse(ib >= 0 ? b.name.Substring(ib + 1) : "0", out nb);
+            return na.CompareTo(nb);
+        });
+
+        return frames.ToArray();
     }
 
     static Sprite FirstSpriteOf(string sheetPath)
