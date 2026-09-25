@@ -87,7 +87,7 @@ public static class StoryBuilder
         List<GameObject> villagers = EnsureVillagers(oldMan.transform.position, villagerIdle);
 
         string triggerQuest = FinalQuestId(oldMan, reveal) ?? sheepQuest.questId;
-        EnsureTrigger(triggerQuest, villagers, oldMan, accusation);
+        EnsureTrigger(triggerQuest, villagers, oldMan, accusation, reveal);
 
         EnsureRewardSheep(oldMan.transform.position, trial.questId);
 
@@ -222,7 +222,8 @@ public static class StoryBuilder
     }
 
     static void EnsureTrigger(string questId, List<GameObject> villagers,
-                              GameObject oldMan, DialogueData announcement)
+                              GameObject oldMan, DialogueData announcement,
+                              DialogueData afterDialogue)
     {
         GameObject go = GameObject.Find("SheepBetrayalTrigger");
         if (go == null) go = new GameObject("SheepBetrayalTrigger");
@@ -230,11 +231,18 @@ public static class StoryBuilder
         var trigger = go.GetComponent<QuestTrigger>();
         if (trigger == null) trigger = go.AddComponent<QuestTrigger>();
 
+        // Without a position it sits at world origin, and "is a player nearby"
+        // then measures distance from (0,0,0) rather than from the village.
+        go.transform.position = oldMan.transform.position;
+
         trigger.questId = questId;
         trigger.when = QuestTrigger.When.Completed;
         trigger.activate = villagers.ToArray();
         trigger.deactivate = new[] { oldMan };     // the spy slips away
         trigger.announcement = announcement;
+
+        // The beat belongs on the old man admitting it, not on the fifth sheep.
+        trigger.afterDialogue = afterDialogue;
 
         EditorUtility.SetDirty(trigger);
     }

@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -30,6 +31,10 @@ public class DialogueNPC : MonoBehaviour
     public float range = 1.6f;
     public KeyCode interactKey = KeyCode.F;
     public Vector3 promptOffset = new Vector3(0f, 1.1f, 0f);
+
+    /// Raised on the client that finished a conversation, so QuestTrigger can
+    /// stage a beat on a specific line landing rather than on a kill count.
+    public static event Action<DialogueData> ConversationFinished;
 
     bool playerInRange;
     DialogueData active;
@@ -103,6 +108,8 @@ public class DialogueNPC : MonoBehaviour
 
     void OnConversationEnded()
     {
+        if (active != null && ConversationFinished != null) ConversationFinished(active);
+
         QuestManager qm = QuestManager.Instance;
         if (qm == null || active == null) return;
 

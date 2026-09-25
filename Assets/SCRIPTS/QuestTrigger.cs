@@ -16,7 +16,12 @@ public class QuestTrigger : MonoBehaviour
     }
 
     [Header("Condition")]
-    [Tooltip("Must match the questId on the QuestDefinition exactly.")]
+    [Tooltip("Fires once this conversation has been read to the end. Takes " +
+         "priority over the quest below - a beat that should land on a line " +
+         "should wait for the line, not for a kill count reached somewhere else.")]
+    public DialogueData afterDialogue;
+
+    [Tooltip("Used when After Dialogue is empty. Must match the questId exactly.")]
     public string questId = "";
     public When when = When.Completed;
 
@@ -46,6 +51,24 @@ public class QuestTrigger : MonoBehaviour
     bool fired;
     bool subscribed;
 
+    void OnEnable()
+    {
+        DialogueNPC.ConversationFinished += HandleConversationFinished;
+    }
+
+    void OnDisable()
+    {
+        DialogueNPC.ConversationFinished -= HandleConversationFinished;
+    }
+
+    void HandleConversationFinished(DialogueData data)
+    {
+        if (fired || afterDialogue == null || data != afterDialogue) return;
+
+        conditionMet = true;
+        Debug.Log("[Wanderers] " + name + " armed by conversation '" + data.name + "'", this);
+    }
+
     void Start()
     {
         // Objects start hidden so the villagers are not standing around before
@@ -53,7 +76,11 @@ public class QuestTrigger : MonoBehaviour
         foreach (GameObject go in activate)
             if (go != null) go.SetActive(false);
 
-        Debug.Log("[Wanderers] " + name + " is watching '" + questId + "' for " + when +
+        string watching = afterDialogue != null
+            ? "conversation '" + afterDialogue.name + "'"
+            : "quest '" + questId + "' for " + when;
+
+        Debug.Log("[Wanderers] " + name + " is watching " + watching +
                   " (" + activate.Length + " to reveal, " + deactivate.Length + " to hide)", this);
     }
 
@@ -103,7 +130,8 @@ public class QuestTrigger : MonoBehaviour
 
     void Evaluate()
     {
-        if (fired || string.IsNullOrEmpty(questId)) return;
+        // A conversation-gated trigger ignores quest state entirely.
+        if (fired || afterDialogue != null || string.IsNullOrEmpty(questId)) return;
 
         QuestManager qm = QuestManager.Instance;
         if (qm == null) return;
