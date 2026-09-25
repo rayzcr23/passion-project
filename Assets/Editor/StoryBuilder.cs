@@ -75,7 +75,7 @@ public static class StoryBuilder
             EditorUtility.SetDirty(villagerIdle);
         }
 
-        GameObject oldMan = FindOldMan();
+        GameObject oldMan = FindOldMan(sheepQuest);
         if (oldMan == null)
         {
             Debug.LogError("[Wanderers] No DialogueNPC in the scene to use as the old man.");
@@ -121,17 +121,36 @@ public static class StoryBuilder
         return fallback;
     }
 
-    static GameObject FindOldMan()
+    /// The old man is the NPC who hands out the sheep quest.
+    ///
+    /// This used to be "any NPC with a conversation", which stopped working the
+    /// moment the villagers got the trial dialogue: it picked a villager,
+    /// appended the reveal to their chapters, and pointed the trigger's
+    /// deactivate at them - so the trigger switched a villager on and straight
+    /// back off while the old man stood there.
+    static GameObject FindOldMan(QuestDefinition sheepQuest)
     {
-        // The NPC already carrying a conversation is the old man.
+        DialogueNPC fallback = null;
+
         foreach (DialogueNPC npc in Object.FindObjectsByType<DialogueNPC>(FindObjectsSortMode.None))
         {
-            bool hasDialogue = npc.dialogue != null ||
-                (npc.conversations != null && npc.conversations.Length > 0);
+            if (npc.name.StartsWith("Villager")) continue;
 
-            if (hasDialogue) return npc.gameObject;
+            foreach (DialogueData d in Chapters(npc))
+                if (d != null && d.startsQuest == sheepQuest) return npc.gameObject;
+
+            if (fallback == null) fallback = npc;
         }
-        return null;
+
+        return fallback != null ? fallback.gameObject : null;
+    }
+
+    static IEnumerable<DialogueData> Chapters(DialogueNPC npc)
+    {
+        if (npc.conversations != null)
+            foreach (DialogueData d in npc.conversations) yield return d;
+
+        yield return npc.dialogue;
     }
 
     /// Appends the reveal as the final chapter, keeping whatever chapters are
@@ -219,6 +238,11 @@ public static class StoryBuilder
 
             if (placeholder && (npc.conversations == null || npc.conversations.Length == 0))
                 npc.dialogue = lines;
+
+            // A villager must never carry the old man's reveal. An earlier run
+            // could append it here by mistaking a villager for him.
+            if (npc.conversations != null && npc.conversations.Length > 0)
+                npc.conversations = new DialogueData[0];
 
             EditorUtility.SetDirty(go);
             made.Add(go);

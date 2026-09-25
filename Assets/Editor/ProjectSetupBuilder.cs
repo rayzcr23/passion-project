@@ -460,8 +460,8 @@ public static class ProjectSetupBuilder
         // uses, so the thing you ride animates like the thing you killed.
         MountState mount = Ensure<MountState>(root);
         mount.speedMultiplier = 2.2f;
-        mount.mountScale = 1.8f;
-        mount.mountOffset = new Vector3(0f, -0.5f, 0f);
+        mount.mountScale = 1.9f;
+        mount.mountOffset = new Vector3(0f, -0.34f, 0f);
         mount.mountFrames = LoadSheepFrames();
 
         // The ring is a mid-cost spender now, so POW has two sinks.

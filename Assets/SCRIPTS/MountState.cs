@@ -22,8 +22,10 @@ public class MountState : NetworkBehaviour
     [Header("Visual")]
     public Sprite[] mountFrames;
     public float framesPerSecond = 10f;
-    public Vector3 mountOffset = new Vector3(0f, -0.5f, 0f);
-    public float mountScale = 1.8f;
+    [Tooltip("The sheep is drawn IN FRONT of the rider so its body hides their " +
+         "legs - otherwise the knight reads as hovering above it.")]
+    public Vector3 mountOffset = new Vector3(0f, -0.34f, 0f);
+    public float mountScale = 1.9f;
 
     readonly NetworkVariable<bool> riding = new NetworkVariable<bool>();
     readonly NetworkVariable<ulong> mountObjectId = new NetworkVariable<ulong>();
@@ -152,8 +154,9 @@ public class MountState : NetworkBehaviour
 
         mountSprite = visual.AddComponent<SpriteRenderer>();
 
-        // Behind the rider on purpose - you sit on the sheep, not inside it.
-        if (body != null) mountSprite.sortingOrder = body.sortingOrder - 1;
+        // In front of the rider on purpose: the sheep's body covers the legs, so
+        // the knight sits in it rather than appearing to float over it.
+        if (body != null) mountSprite.sortingOrder = body.sortingOrder + 1;
 
         if (mountFrames != null && mountFrames.Length > 0)
         {
