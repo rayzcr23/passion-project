@@ -146,6 +146,20 @@ public static class CharacterAnimationBuilder
         int cols = tex.width / cell;
         int rows = Mathf.Max(1, tex.height / cell);
 
+        // Already sliced correctly: leave it alone. The deprecated spritesheet API
+        // writes sprite ids but never fills internalIDToNameTable, which is what
+        // Unity actually uses to keep sub-sprite ids stable - so re-slicing can
+        // remint every id and orphan every reference to it. That is what kept
+        // turning prefabs into Missing (Sprite).
+        if (importer.spriteImportMode == SpriteImportMode.Multiple)
+        {
+            int existing = 0;
+            foreach (Object o in AssetDatabase.LoadAllAssetsAtPath(path))
+                if (o is Sprite) existing++;
+
+            if (existing == cols * rows) return true;
+        }
+
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Multiple;
         importer.spritePixelsPerUnit = 100f;

@@ -37,6 +37,13 @@ public static class CritterBuilder
         AnimationClip move = BuildClip(MoveSheet, OutRoot + "Sheep_Move.anim");
 
         BuildController(idle, move);
+
+        // The prefab is about to reference the controller by GUID, so it has to
+        // exist on disk first - otherwise LoadAssetAtPath returns null and the
+        // prefab is quietly saved with no controller at all.
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
         BuildPrefab();
 
         RepairSceneInstances();
@@ -147,8 +154,14 @@ public static class CritterBuilder
         sr.sortingOrder = 1;
 
         var animator = Ensure<Animator>(go);
-        animator.runtimeAnimatorController =
-            AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+
+        var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+        if (controller == null)
+            Debug.LogError("[Wanderers] Could not load " + ControllerPath +
+                           " - the sheep prefab would have been saved with no controller.");
+        else
+            animator.runtimeAnimatorController = controller;
+
         animator.applyRootMotion = false;
 
         var rb = Ensure<Rigidbody2D>(go);
