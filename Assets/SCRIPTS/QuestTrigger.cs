@@ -34,6 +34,15 @@ public class QuestTrigger : MonoBehaviour
 
     public string announcementSpeaker = "";
 
+    [Header("Staging")]
+    [Tooltip("Wait until a player is close before firing. Without this the beat " +
+         "plays the instant the quest completes - which, with sheep scattered " +
+         "across the map, means villagers accusing you in an empty field.")]
+    public bool requirePlayerNearby = true;
+
+    public float nearbyRange = 9f;
+
+    bool conditionMet;
     bool fired;
     bool subscribed;
 
@@ -62,6 +71,28 @@ public class QuestTrigger : MonoBehaviour
         }
 
         Evaluate();
+
+        // Armed but waiting for someone to walk back into the village.
+        if (conditionMet && PlayerIsNear())
+        {
+            fired = true;
+            Debug.Log("[Wanderers] " + name + " fired on '" + questId + "'", this);
+            Fire();
+        }
+    }
+
+    bool PlayerIsNear()
+    {
+        if (!requirePlayerNearby) return true;
+
+        Unity.Netcode.NetworkManager nm = Unity.Netcode.NetworkManager.Singleton;
+        if (nm == null || !nm.IsClient || nm.SpawnManager == null) return false;
+
+        Unity.Netcode.NetworkObject player = nm.SpawnManager.GetLocalPlayerObject();
+        if (player == null) return false;
+
+        return (player.transform.position - transform.position).sqrMagnitude
+               <= nearbyRange * nearbyRange;
     }
 
     void OnDestroy()
@@ -83,9 +114,14 @@ public class QuestTrigger : MonoBehaviour
 
         if (!met) return;
 
-        fired = true;
-        Debug.Log("[Wanderers] " + name + " fired on '" + questId + "'", this);
-        Fire();
+        // Arm only. Update decides when the player is actually here to see it.
+        if (!conditionMet)
+        {
+            conditionMet = true;
+            Debug.Log("[Wanderers] " + name + " armed on '" + questId + "'" +
+                      (requirePlayerNearby ? " - waiting for a player within " + nearbyRange : ""),
+                      this);
+        }
     }
 
     void Fire()
