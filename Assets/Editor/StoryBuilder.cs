@@ -263,8 +263,18 @@ public static class StoryBuilder
 
         var sr = sheep.GetComponent<SpriteRenderer>();
         if (sr == null) sr = sheep.AddComponent<SpriteRenderer>();
-        if (sr.sprite == null)
-            sr.sprite = FirstSprite("Assets/Tiny Swords/Tiny Swords (Update 010)/Resources/Sheep/HappySheep_Idle.png");
+
+        // Assigned unconditionally. This was created while the sheep sheet was
+        // mis-sliced, so FirstSprite returned null and the renderer was saved
+        // empty - and an "only if null" check then left it empty on every rerun.
+        Sprite sheepSprite = FirstSprite(
+            "Assets/Tiny Swords/Tiny Swords (Update 010)/Resources/Sheep/HappySheep_Idle.png");
+
+        if (sheepSprite != null) sr.sprite = sheepSprite;
+        else if (sr.sprite == null)
+            Debug.LogError("[Wanderers] RewardSheep has no sprite - run Build Sheep first " +
+                           "so the sheep sheet is sliced, then run this again.", sheep);
+
         sr.sortingOrder = 1;
 
         // It is claimed over the network, so it needs an identity of its own.
