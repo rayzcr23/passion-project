@@ -16,7 +16,7 @@ MonoBehaviour:
   lines:
   - You say the old man used you. Perhaps.
   - Words are cheap when the pens are empty.
-  - The goblins have been circling us for a season. Kill twenty-five of them.
+  - The goblins have been circling us for a season. Kill ten of them.
   - Do that, and we will believe you were a fool and not a traitor.
   startsQuest: {fileID: 11400000, guid: d6903a3634de8244593120f3d2a109f8, type: 2}
   inProgressLines:

@@ -2071,7 +2071,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcId: villager_2
-  conversations: []
+  conversations:
+  - {fileID: 11400000, guid: 30f656a14c271c04ca353a9daaae6558, type: 2}
+  - {fileID: 11400000, guid: 082fe75681b6fc64685fba2cd16bdb87, type: 2}
   dialogue: {fileID: 11400000, guid: 30f656a14c271c04ca353a9daaae6558, type: 2}
   range: 1.6
   interactKey: 102
@@ -2140,7 +2142,7 @@ Transform:
   m_GameObject: {fileID: 207254562}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.22000003, y: -0.5220001, z: 0}
+  m_LocalPosition: {x: 0.22000003, y: -1.6220001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3365,7 +3367,7 @@ Transform:
   m_GameObject: {fileID: 471042777}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.62, y: -0.022000074, z: 0}
+  m_LocalPosition: {x: 1.62, y: -1.1220001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4458,7 +4460,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2501
   m_Sprite: {fileID: -6367260613296689715, guid: 0c0ed255b8dd68f44b8f14f0fbd2f941, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4479,8 +4481,8 @@ Transform:
   m_GameObject: {fileID: 708786481}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.42, y: -1.6220001, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 2.82, y: -3.2220001, z: 0}
+  m_LocalScale: {x: 1.6, y: 1.6, z: 1.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6559,7 +6561,7 @@ MonoBehaviour:
   - {fileID: 207254562}
   - {fileID: 471042777}
   deactivate:
-  - {fileID: 1584487818}
+  - {fileID: 207254562}
   announcement: {fileID: 11400000, guid: 76b26e8da18fe1d4e9e3efb96c21b7b7, type: 2}
   announcementSpeaker: 
   requirePlayerNearby: 1
@@ -6573,7 +6575,7 @@ Transform:
   m_GameObject: {fileID: 1128536226}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.18, y: -0.022000074, z: 0}
+  m_LocalPosition: {x: 0.22000003, y: -1.6220001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10082,7 +10084,7 @@ Transform:
   m_GameObject: {fileID: 1584487818}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.18, y: -0.022000074, z: 0}
+  m_LocalPosition: {x: -1.18, y: -1.1220001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10488,6 +10490,7 @@ MonoBehaviour:
   target: {fileID: 0}
   offset: {x: 0, y: 0, z: -10}
   smoothTime: 0.15
+  maxLag: 1.6
   maxShakeDistance: 0.35
   traumaDecay: 1.8
 --- !u!81 &1659087654

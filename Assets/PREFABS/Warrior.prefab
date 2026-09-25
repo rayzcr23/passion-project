@@ -630,4 +630,3 @@ MonoBehaviour:
   framesPerSecond: 10
   mountOffset: {x: 0, y: -0.28, z: 0}
   mountScale: 1.15
-  riderLift: 0.22

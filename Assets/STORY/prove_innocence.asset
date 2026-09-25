@@ -17,6 +17,6 @@ MonoBehaviour:
   description: 
   objective: 1
   targetId: goblin
-  requiredCount: 25
+  requiredCount: 10
   completionText: Well done.
   nextQuest: {fileID: 0}
