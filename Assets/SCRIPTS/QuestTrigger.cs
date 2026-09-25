@@ -43,6 +43,9 @@ public class QuestTrigger : MonoBehaviour
         // they have a reason to be.
         foreach (GameObject go in activate)
             if (go != null) go.SetActive(false);
+
+        Debug.Log("[Wanderers] " + name + " is watching '" + questId + "' for " + when +
+                  " (" + activate.Length + " to reveal, " + deactivate.Length + " to hide)", this);
     }
 
     void Update()
@@ -81,6 +84,7 @@ public class QuestTrigger : MonoBehaviour
         if (!met) return;
 
         fired = true;
+        Debug.Log("[Wanderers] " + name + " fired on '" + questId + "'", this);
         Fire();
     }
 

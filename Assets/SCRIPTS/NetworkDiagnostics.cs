@@ -94,6 +94,31 @@ public class NetworkDiagnostics : MonoBehaviour
             }
 
             sb.AppendLine();
+            sb.AppendLine("QUESTS (0=unstarted 1=active 2=complete)");
+
+            QuestManager qm = QuestManager.Instance;
+            if (qm == null || qm.Entries == null)
+            {
+                sb.AppendLine("  no QuestManager");
+            }
+            else if (qm.Entries.Count == 0)
+            {
+                sb.AppendLine("  none started");
+            }
+            else
+            {
+                for (int i = 0; i < qm.Entries.Count; i++)
+                {
+                    QuestManager.Progress p = qm.Entries[i];
+                    QuestDefinition def = qm.Find(p.id.ToString());
+
+                    sb.AppendLine(string.Format("  {0}: state={1} count={2}{3}",
+                        p.id, p.state, p.counter,
+                        def == null ? "  NOT REGISTERED" : "/" + def.requiredCount));
+                }
+            }
+
+            sb.AppendLine();
             sb.AppendLine("Spawned player objects visible here:");
 
             int seen = 0;
