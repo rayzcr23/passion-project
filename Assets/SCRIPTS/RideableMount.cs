@@ -16,6 +16,14 @@ public class RideableMount : NetworkBehaviour
     [Tooltip("Everyone gets a sheep, or only the first to reach it.")]
     public bool grantToEveryone = true;
 
+    [Tooltip("Stays invisible and untouchable until this quest is complete. Left " +
+         "blank it is available immediately.
+
+It hides itself rather than being " +
+         "SetActive(false) by a QuestTrigger, because NGO does not spawn in-scene " +
+         "NetworkObjects that start inactive - the claim would never reach the server.")]
+    public string requiresQuestId = "";
+
     readonly NetworkVariable<bool> claimed = new NetworkVariable<bool>();
 
     SpriteRenderer sprite;
@@ -34,9 +42,23 @@ public class RideableMount : NetworkBehaviour
         ApplyClaimed(claimed.Value);
     }
 
+    bool Available
+    {
+        get
+        {
+            if (claimed.Value) return false;
+            if (string.IsNullOrEmpty(requiresQuestId)) return true;
+
+            QuestManager qm = QuestManager.Instance;
+            return qm != null && qm.IsComplete(requiresQuestId);
+        }
+    }
+
     void Update()
     {
-        if (claimed.Value) return;
+        ApplyClaimed(claimed.Value);
+
+        if (!Available) return;
 
         MountState mine = LocalMount();
         playerInRange = mine != null &&
@@ -71,10 +93,13 @@ public class RideableMount : NetworkBehaviour
 
     void ApplyClaimed(bool isClaimed)
     {
-        if (sprite != null) sprite.enabled = !isClaimed;
+        bool visible = !isClaimed && (string.IsNullOrEmpty(requiresQuestId) ||
+            (QuestManager.Instance != null && QuestManager.Instance.IsComplete(requiresQuestId)));
+
+        if (sprite != null) sprite.enabled = visible;
 
         foreach (Collider2D c in colliders)
-            if (c != null) c.enabled = !isClaimed;
+            if (c != null) c.enabled = visible;
     }
 
     static MountState LocalMount()
@@ -88,7 +113,7 @@ public class RideableMount : NetworkBehaviour
 
     void OnGUI()
     {
-        if (claimed.Value || !playerInRange || Camera.main == null) return;
+        if (!Available || !playerInRange || Camera.main == null) return;
         if (DialogueUI.Instance != null && DialogueUI.Instance.IsOpen) return;
 
         Vector3 screen = Camera.main.WorldToScreenPoint(transform.position + promptOffset);

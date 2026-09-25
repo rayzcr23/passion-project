@@ -261,23 +261,13 @@ public static class StoryBuilder
         var rideable = sheep.GetComponent<RideableMount>();
         if (rideable == null) rideable = sheep.AddComponent<RideableMount>();
         rideable.grantToEveryone = true;      // all three brothers ride
+        rideable.requiresQuestId = trialQuestId;
 
         EditorUtility.SetDirty(sheep);
 
-        // Its own trigger, so the reward follows the trial rather than the betrayal.
-        GameObject triggerGo = GameObject.Find("RewardSheepTrigger");
-        if (triggerGo == null) triggerGo = new GameObject("RewardSheepTrigger");
-
-        var trigger = triggerGo.GetComponent<QuestTrigger>();
-        if (trigger == null) trigger = triggerGo.AddComponent<QuestTrigger>();
-
-        trigger.questId = trialQuestId;
-        trigger.when = QuestTrigger.When.Completed;
-        trigger.activate = new[] { sheep };
-        trigger.deactivate = new GameObject[0];
-        trigger.announcement = null;
-
-        EditorUtility.SetDirty(trigger);
+        // No QuestTrigger here on purpose: it hides objects with SetActive, and NGO
+        // will not spawn an in-scene NetworkObject that starts inactive, so the
+        // claim RPC would never reach the server. The sheep gates itself instead.
         Debug.Log("[Wanderers] Reward sheep appears when '" + trialQuestId + "' completes");
     }
 
