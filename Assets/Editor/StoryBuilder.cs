@@ -41,11 +41,39 @@ public static class StoryBuilder
             "...he is gone. Of course he is gone."
         });
 
-        DialogueData villagerIdle = EnsureDialogue("Villager_Angry", "villager", new[]
+        // The trial. One asset covers all three states: the offer, the nagging
+        // while you are out there, and the forgiveness when you come back.
+        QuestDefinition trial = EnsureQuest(
+            "prove_innocence", "Prove Your Innocence", "goblin", 25);
+
+        DialogueData villagerIdle = EnsureDialogue("Villager_Trial", "villager", new[]
         {
-            "Do not speak to me.",
-            "Find the old man. Find him and bring him back here."
+            "You say the old man used you. Perhaps.",
+            "Words are cheap when the pens are empty.",
+            "The goblins have been circling us for a season. Kill twenty-five of them.",
+            "Do that, and we will believe you were a fool and not a traitor."
         });
+
+        if (villagerIdle.startsQuest == null)
+        {
+            villagerIdle.startsQuest = trial;
+
+            villagerIdle.inProgressLines = new[]
+            {
+                "Twenty-five. We are counting.",
+                "The forest is thick with them. Go."
+            };
+
+            villagerIdle.completedLines = new[]
+            {
+                "...you actually came back.",
+                "The pens are still empty. But the treeline is quiet for the first time in months.",
+                "You were a fool. Not a traitor. That is something.",
+                "Go north, to the blacksmith. Tell him what the old man told you."
+            };
+
+            EditorUtility.SetDirty(villagerIdle);
+        }
 
         GameObject oldMan = FindOldMan();
         if (oldMan == null)
@@ -60,6 +88,8 @@ public static class StoryBuilder
 
         string triggerQuest = FinalQuestId(oldMan, reveal) ?? sheepQuest.questId;
         EnsureTrigger(triggerQuest, villagers, oldMan, accusation);
+
+        ProjectSetupBuilder.RegisterAllQuests();
 
         EditorSceneManager.MarkSceneDirty(oldMan.scene);
         AssetDatabase.SaveAssets();
@@ -174,7 +204,14 @@ public static class StoryBuilder
             var npc = go.GetComponent<DialogueNPC>();
             if (npc == null) npc = go.AddComponent<DialogueNPC>();
             npc.npcId = "villager_" + (i + 1);
-            if (npc.dialogue == null) npc.dialogue = lines;
+
+            // Villagers built before the trial existed carry Villager_Angry, which
+            // starts no quest. Upgrade those, but leave anything hand-authored.
+            bool placeholder = npc.dialogue == null ||
+                               npc.dialogue.name == "Villager_Angry";
+
+            if (placeholder && (npc.conversations == null || npc.conversations.Length == 0))
+                npc.dialogue = lines;
 
             EditorUtility.SetDirty(go);
             made.Add(go);
@@ -198,6 +235,25 @@ public static class StoryBuilder
         trigger.announcement = announcement;
 
         EditorUtility.SetDirty(trigger);
+    }
+
+    static QuestDefinition EnsureQuest(string id, string title, string target, int count)
+    {
+        string path = StoryFolder + "/" + id + ".asset";
+
+        var existing = AssetDatabase.LoadAssetAtPath<QuestDefinition>(path);
+        if (existing != null) return existing;      // never restamp a tuned quest
+
+        var quest = ScriptableObject.CreateInstance<QuestDefinition>();
+        quest.questId = id;
+        quest.title = title;
+        quest.objective = QuestDefinition.Objective.Kill;
+        quest.targetId = target;
+        quest.requiredCount = count;
+        quest.description = "";
+
+        AssetDatabase.CreateAsset(quest, path);
+        return quest;
     }
 
     static DialogueData EnsureDialogue(string assetName, string speaker, string[] lines)

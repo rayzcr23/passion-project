@@ -4282,7 +4282,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87087bddc830be948b632c32b6a5acbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  questId: kill some sheep
+  questId: kill_sheep_5
   when: 1
   activate:
   - {fileID: 1156603779}

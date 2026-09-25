@@ -175,6 +175,26 @@ public static class ProjectSetupBuilder
         }
     }
 
+    /// Fills QuestSystem's lookup list from every QuestDefinition in the project.
+    /// Public so StoryBuilder can call it straight after creating a quest asset.
+    public static void RegisterAllQuests()
+    {
+        QuestManager qm = Object.FindFirstObjectByType<QuestManager>();
+        if (qm == null) return;
+
+        var found = new System.Collections.Generic.List<QuestDefinition>();
+
+        foreach (string guid in AssetDatabase.FindAssets("t:QuestDefinition"))
+        {
+            var quest = AssetDatabase.LoadAssetAtPath<QuestDefinition>(
+                AssetDatabase.GUIDToAssetPath(guid));
+            if (quest != null) found.Add(quest);
+        }
+
+        qm.quests = found.ToArray();
+        EditorUtility.SetDirty(qm);
+    }
+
     /// QuestManager needs a NetworkObject of its own: quest state is replicated,
     /// and the NetworkManager object itself is not a spawnable network object.
     static void EnsureQuestSystem(NetworkManager nm)
