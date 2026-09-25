@@ -16,12 +16,11 @@ public class RideableMount : NetworkBehaviour
     [Tooltip("Everyone gets a sheep, or only the first to reach it.")]
     public bool grantToEveryone = true;
 
-    [Tooltip("Stays invisible and untouchable until this quest is complete. Left " +
-         "blank it is available immediately.
-
-It hides itself rather than being " +
-         "SetActive(false) by a QuestTrigger, because NGO does not spawn in-scene " +
-         "NetworkObjects that start inactive - the claim would never reach the server.")]
+    // Hides itself rather than being SetActive(false) by a QuestTrigger: NGO does
+    // not spawn in-scene NetworkObjects that start inactive, so the claim RPC
+    // would never reach the server.
+    [Tooltip("Stays invisible and untouchable until this quest is complete. " +
+         "Leave blank to make it available immediately.")]
     public string requiresQuestId = "";
 
     readonly NetworkVariable<bool> claimed = new NetworkVariable<bool>();
