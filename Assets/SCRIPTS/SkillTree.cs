@@ -88,13 +88,17 @@ public class SkillTree : NetworkBehaviour
         return depth;
     }
 
+    // Larger than long.MaxValue, so it types as ulong unless cast - and
+    // "long *= ulong" is ambiguous rather than a silent conversion.
+    const long Mix = unchecked((long)0xff51afd7ed558ccdUL);
+
     int Hash(long id, int salt)
     {
         unchecked
         {
             long h = id * 6364136223846793005L + seed + salt * 1442695040888963407L;
             h ^= h >> 33;
-            h *= 0xff51afd7ed558ccdL;
+            h *= Mix;
             h ^= h >> 33;
             return (int)h;
         }
