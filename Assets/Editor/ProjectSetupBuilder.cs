@@ -444,21 +444,26 @@ public static class ProjectSetupBuilder
         ring.hitLayers = (1 << enemyLayer);
         ring.bladeSprite = AssetDatabase.LoadAssetAtPath<Sprite>(ArrowSprite);
 
-        // Super: Hollow Purple. Replaces the ground crack - a corridor rather
-        // than a ring, so it rewards lining enemies up.
-        var oldCrack = root.GetComponent<GroundCrackAbility>();
-        if (oldCrack != null) Object.DestroyImmediate(oldCrack, true);
+        // Super: Rain of Swords - the Special escalated. Six blades orbiting
+        // becomes fifty falling out of the sky.
+        foreach (var dead in new System.Type[] { typeof(GroundCrackAbility), typeof(HollowPurpleAbility) })
+        {
+            var stale = root.GetComponent(dead);
+            if (stale != null) Object.DestroyImmediate(stale, true);
+        }
 
-        HollowPurpleAbility purple = Ensure<HollowPurpleAbility>(root);
-        purple.displayName = "Hollow Purple";
-        purple.cooldown = 1f;                 // POW is the real gate, not time
-        purple.powerCost = 100f;              // a full meter
-        purple.animatorTrigger = "Attack2";
-        purple.length = 22f;
-        purple.width = 2.4f;
-        purple.hitLayers = (1 << enemyLayer);
-        purple.oneShotsNonBosses = true;
-        purple.impactPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+        RainOfSwordsAbility rain = Ensure<RainOfSwordsAbility>(root);
+        rain.displayName = "Rain of Swords";
+        rain.cooldown = 1f;                   // POW is the real gate, not time
+        rain.powerCost = 100f;                // a full meter
+        rain.animatorTrigger = "Attack2";
+        rain.radius = 5.5f;
+        rain.swordCount = 34;
+        rain.duration = 2.6f;
+        rain.waves = 6;
+        rain.hitLayers = (1 << enemyLayer);
+        rain.bladeSprite = AssetDatabase.LoadAssetAtPath<Sprite>(ArrowSprite);
+        rain.impactPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
 
         PowerMeter meter = Ensure<PowerMeter>(root);
         meter.max = 100f;
@@ -482,7 +487,7 @@ public static class ProjectSetupBuilder
         loadout.m1 = swing;
         loadout.aimMode = AbilityLoadout.AimMode.Facing;   // hitbox sits in front of the sprite
         loadout.special = ring;                            // Q
-        loadout.super = purple;                            // E
+        loadout.super = rain;                              // E
         loadout.death = death;
         loadout.guard = guard;
 

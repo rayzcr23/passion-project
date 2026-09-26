@@ -630,8 +630,8 @@ MonoBehaviour:
   - {fileID: 5661645519548905162, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
   - {fileID: 2725343537496752768, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
   framesPerSecond: 10
-  mountOffset: {x: 0, y: -0.46, z: 0}
-  mountScale: 1.9
+  mountOffset: {x: 0, y: -0.38, z: 0}
+  mountScale: 1.25
 --- !u!114 &1914736999584708676
 MonoBehaviour:
   m_ObjectHideFlags: 0
