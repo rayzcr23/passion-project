@@ -4499,7 +4499,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   claimRange: 1.9
-  promptOffset: {x: 0, y: 1.2, z: 0}
+  promptOffset: {x: 0, y: 0.8, z: 0}
   requiresQuestId: prove_innocence
 --- !u!4 &720111320 stripped
 Transform:
@@ -9925,6 +9925,10 @@ MonoBehaviour:
   toggleKey: 107
   nodeRadius: 7
   frontierRadius: 5
+  zoom: 1
+  minZoom: 0.35
+  maxZoom: 2.5
+  zoomStep: 0.12
 --- !u!4 &1582009852
 Transform:
   m_ObjectHideFlags: 0

@@ -24,10 +24,14 @@ public class MountState : NetworkBehaviour
     public float framesPerSecond = 10f;
     [Tooltip("The sheep is drawn IN FRONT of the rider so its body hides their " +
          "legs - otherwise the knight reads as hovering above it.")]
-    // Only a little lower: the bouncing animation already lifts and drops the
-    // sheep, so a big gap opens on the down-beat if the rider sits too high.
-    public Vector3 mountOffset = new Vector3(0f, -0.46f, 0f);
-    public float mountScale = 1.9f;
+    // Measured, not guessed: the warrior's art is 89px tall and the sheep's 38px,
+    // so at 1.9 the sheep stood 81% of his height and swallowed him. 1.25 puts it
+    // at ~53%, which is roughly what a sheep is next to a person.
+    //
+    // The offset sits it at his legs - low enough that the bouncing animation
+    // does not open a gap on the down-beat, high enough to hide his feet.
+    public Vector3 mountOffset = new Vector3(0f, -0.38f, 0f);
+    public float mountScale = 1.25f;
 
     readonly NetworkVariable<bool> riding = new NetworkVariable<bool>();
     readonly NetworkVariable<ulong> mountObjectId = new NetworkVariable<ulong>();
