@@ -628,5 +628,5 @@ MonoBehaviour:
   - {fileID: 5661645519548905162, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
   - {fileID: 2725343537496752768, guid: c7e7baf20aa75394baef583c86fb9d87, type: 3}
   framesPerSecond: 10
-  mountOffset: {x: 0, y: -0.5, z: 0}
-  mountScale: 1.8
+  mountOffset: {x: 0, y: -0.34, z: 0}
+  mountScale: 1.9

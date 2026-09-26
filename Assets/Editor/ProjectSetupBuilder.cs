@@ -255,6 +255,13 @@ public static class ProjectSetupBuilder
 
         Debug.Log("[Wanderers] QuestSystem knows " + found.Count + " quest(s)");
 
+        if (Object.FindFirstObjectByType<SkillTreeUI>() == null)
+        {
+            var tree = new GameObject("SkillTreeUI");
+            tree.AddComponent<SkillTreeUI>();
+            Debug.Log("[Wanderers] Added SkillTreeUI - press K in play mode");
+        }
+
         if (Object.FindFirstObjectByType<DialogueUI>() == null)
         {
             var ui = new GameObject("DialogueUI");
@@ -458,6 +465,9 @@ public static class ProjectSetupBuilder
 
         // The sheep mount. Frames come from the same bouncing sheet the critter
         // uses, so the thing you ride animates like the thing you killed.
+        SkillTree skills = Ensure<SkillTree>(root);
+        skills.seed = 1337;
+
         MountState mount = Ensure<MountState>(root);
         mount.speedMultiplier = 2.2f;
         mount.mountScale = 1.9f;

@@ -60,7 +60,10 @@ public class PowerMeter : NetworkBehaviour
                 attacker.PlayerObject != null)
             {
                 var meter = attacker.PlayerObject.GetComponent<PowerMeter>();
-                if (meter != null) meter.ServerAdd(damage * meter.gainPerDamageDealt);
+                var tree = attacker.PlayerObject.GetComponent<SkillTree>();
+                float scale = tree != null ? tree.PowerMultiplier : 1f;
+
+                if (meter != null) meter.ServerAdd(damage * meter.gainPerDamageDealt * scale);
             }
         }
 

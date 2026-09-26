@@ -21,6 +21,7 @@ public abstract class Ability : NetworkBehaviour
     float nextReadyTime;
     protected Animator anim;
     protected PowerMeter meter;
+    protected SkillTree skills;
 
     public bool IsReady => Time.time >= nextReadyTime;
     public float CooldownRemaining => Mathf.Max(0f, nextReadyTime - Time.time);
@@ -29,6 +30,14 @@ public abstract class Ability : NetworkBehaviour
     {
         anim = GetComponentInParent<Animator>();
         meter = GetComponentInParent<PowerMeter>();
+        skills = GetComponentInParent<SkillTree>();
+    }
+
+    /// Scaled by the skill tree's damage nodes.
+    protected int ScaleDamage(int amount)
+    {
+        return skills == null ? amount
+            : Mathf.Max(1, Mathf.RoundToInt(amount * skills.DamageMultiplier));
     }
 
     /// Cooldown and POW both ready.
@@ -45,7 +54,8 @@ public abstract class Ability : NetworkBehaviour
 
         // Predicted locally so the cooldown UI reacts instantly; the server
         // re-checks nothing here because a stale cooldown is harmless in co-op PvE.
-        nextReadyTime = Time.time + cooldown;
+        nextReadyTime = Time.time +
+            cooldown * (skills != null ? skills.CooldownMultiplier : 1f);
 
         ActivateServerRpc(aimDirection);
     }

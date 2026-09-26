@@ -129,7 +129,7 @@ public class MeleeArcAbility : Ability
             if (rejected) continue;
 
             Vector2 incoming = distance > 0.001f ? toTarget / distance : aimDirection;
-            target.ServerTakeDamage(damage, OwnerClientId, incoming);
+            target.ServerTakeDamage(ScaleDamage(damage), OwnerClientId, incoming);
 
             if (knockback > 0f)
             {

@@ -75,7 +75,7 @@ public class OrbitRingAbility : Ability
             nextHitTime[target] = now + hitInterval;
 
             Vector2 away = (Vector2)target.transform.position - (Vector2)transform.position;
-            target.ServerTakeDamage(damage, OwnerClientId,
+            target.ServerTakeDamage(ScaleDamage(damage), OwnerClientId,
                 away.sqrMagnitude > 0.0001f ? away.normalized : Vector2.right);
         }
     }

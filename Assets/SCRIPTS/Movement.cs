@@ -12,6 +12,7 @@ public class Movement : NetworkBehaviour
     public KnockbackReceiver knockback;     // optional: set automatically if present
     public GuardAbility guard;              // optional: set automatically if present
     public MountState mount;                // optional: set automatically if present
+    public SkillTree skills;                // optional: set automatically if present
     [Tooltip("On: body tracks the cursor constantly (twin-stick feel). Off: body " +
          "follows movement and only turns to the aim while attacking. Off is right " +
          "for keyboard movement - the camera lags behind you as you walk, so a " +
@@ -36,6 +37,7 @@ public class Movement : NetworkBehaviour
         if (knockback == null) knockback = GetComponent<KnockbackReceiver>();
         if (guard == null) guard = GetComponent<GuardAbility>();
         if (mount == null) mount = GetComponent<MountState>();
+        if (skills == null) skills = GetComponent<SkillTree>();
     }
 
     public override void OnNetworkSpawn()
@@ -83,6 +85,7 @@ public class Movement : NetworkBehaviour
         // One source of truth for speed: the shield slows you, the sheep speeds you up.
         float speedScale = (guard != null && guard.IsBlocking) ? guard.moveSpeedMultiplier : 1f;
         if (mount != null) speedScale *= mount.SpeedScale;
+        if (skills != null) speedScale *= skills.SpeedMultiplier;
         if (input.sqrMagnitude > 0.0001f) LastMoveDirection = input.normalized;
 
         rb.linearVelocity = input * speed * speedScale;

@@ -24,6 +24,7 @@ public class Health : NetworkBehaviour
     readonly NetworkVariable<int> current = new NetworkVariable<int>();
 
     GuardAbility guard;
+    ulong lastAttacker = PowerMeter.NoAttacker;
 
     void Awake()
     {
@@ -39,9 +40,18 @@ public class Health : NetworkBehaviour
     public event Action<int, int> OnChanged;
     public event Action OnDied;
 
+    public int EffectiveMax
+    {
+        get
+        {
+            var tree = GetComponent<SkillTree>();
+            return tree == null ? maxHealth : maxHealth + Mathf.RoundToInt(tree.HealthBonus);
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
-        if (IsServer) current.Value = maxHealth;
+        if (IsServer) current.Value = EffectiveMax;
 
         current.OnValueChanged += HandleChanged;
         OnChanged?.Invoke(current.Value, maxHealth);
@@ -77,6 +87,7 @@ public class Health : NetworkBehaviour
             return;                          // fully absorbed
         }
 
+        lastAttacker = attackerClientId;
         current.Value = Mathf.Max(0, current.Value - amount);
 
         PowerMeter.ServerAwardForDamage(attackerClientId, this, amount);
@@ -103,7 +114,7 @@ public class Health : NetworkBehaviour
     public void ServerRevive()
     {
         if (!IsServer) return;
-        current.Value = maxHealth;
+        current.Value = EffectiveMax;
     }
 
     void ServerDie()
@@ -112,6 +123,21 @@ public class Health : NetworkBehaviour
         // than by whoever landed the blow.
         if (!string.IsNullOrEmpty(creatureId) && QuestManager.Instance != null)
             QuestManager.Instance.ServerReportKill(creatureId);
+
+        // Skill points go to whoever landed the killing blow, unlike quest credit
+        // which is shared - the tree is your own build.
+        if (lastAttacker != PowerMeter.NoAttacker)
+        {
+            NetworkManager nm = NetworkManager.Singleton;
+            NetworkClient killer;
+
+            if (nm != null && nm.ConnectedClients.TryGetValue(lastAttacker, out killer) &&
+                killer.PlayerObject != null)
+            {
+                var tree = killer.PlayerObject.GetComponent<SkillTree>();
+                if (tree != null) tree.ServerAwardKill();
+            }
+        }
 
         // Players stay in the world so they can be revived; enemies leave.
         if (!despawnOnDeath) return;

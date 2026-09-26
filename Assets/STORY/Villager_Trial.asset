@@ -20,10 +20,11 @@ MonoBehaviour:
   - Do that, and we will believe you were a fool and not a traitor.
   startsQuest: {fileID: 11400000, guid: d6903a3634de8244593120f3d2a109f8, type: 2}
   inProgressLines:
-  - Twenty-five. We are counting.
+  - ten. We are counting.
   - The forest is thick with them. Go.
   completedLines:
   - ...you actually came back.
   - The pens are still empty. But the treeline is quiet for the first time in months.
   - You were a fool. Not a traitor. That is something.
+  - we will reward you with a sheep which you can ride
   - Go north, to the blacksmith. Tell him what the old man told you.
