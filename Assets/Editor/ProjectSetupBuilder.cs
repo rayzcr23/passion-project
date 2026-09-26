@@ -255,6 +255,13 @@ public static class ProjectSetupBuilder
 
         Debug.Log("[Wanderers] QuestSystem knows " + found.Count + " quest(s)");
 
+        if (Object.FindFirstObjectByType<TouchControls>() == null)
+        {
+            var touch = new GameObject("TouchControls");
+            touch.AddComponent<TouchControls>();
+            Debug.Log("[Wanderers] Added TouchControls - shows itself on touch devices");
+        }
+
         if (Object.FindFirstObjectByType<SkillTreeUI>() == null)
         {
             var tree = new GameObject("SkillTreeUI");
@@ -479,14 +486,27 @@ public static class ProjectSetupBuilder
         mount.mountOffset = new Vector3(0f, -0.38f, 0f);
         mount.mountFrames = LoadSheepFrames();
 
-        // The ring is a mid-cost spender now, so POW has two sinks.
+        // Special: Executioner's Leap. The kit had no way to close distance -
+        // arc, aura and storm are all "damage near me".
+        LeapAbility leap = Ensure<LeapAbility>(root);
+        leap.displayName = "Executioner's Leap";
+        leap.cooldown = 1f;
+        leap.powerCost = 35f;
+        leap.animatorTrigger = "Attack2";
+        leap.distance = 4.2f;
+        leap.impactRadius = 2.3f;
+        leap.damage = 26;
+        leap.hitLayers = (1 << enemyLayer);
+        leap.impactPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+
+        // The orbiting ring stays on the prefab but is no longer bound to a slot.
         ring.powerCost = 35f;
 
         AbilityLoadout loadout = Ensure<AbilityLoadout>(root);
         loadout.aim = aim;
         loadout.m1 = swing;
         loadout.aimMode = AbilityLoadout.AimMode.Facing;   // hitbox sits in front of the sprite
-        loadout.special = ring;                            // Q
+        loadout.special = leap;                            // Q
         loadout.super = rain;                              // E
         loadout.death = death;
         loadout.guard = guard;

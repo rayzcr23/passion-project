@@ -13,6 +13,7 @@ public class Movement : NetworkBehaviour
     public GuardAbility guard;              // optional: set automatically if present
     public MountState mount;                // optional: set automatically if present
     public SkillTree skills;                // optional: set automatically if present
+    public LeapAbility leap;                // optional: set automatically if present
     [Tooltip("On: body tracks the cursor constantly (twin-stick feel). Off: body " +
          "follows movement and only turns to the aim while attacking. Off is right " +
          "for keyboard movement - the camera lags behind you as you walk, so a " +
@@ -38,6 +39,7 @@ public class Movement : NetworkBehaviour
         if (guard == null) guard = GetComponent<GuardAbility>();
         if (mount == null) mount = GetComponent<MountState>();
         if (skills == null) skills = GetComponent<SkillTree>();
+        if (leap == null) leap = GetComponent<LeapAbility>();
     }
 
     public override void OnNetworkSpawn()
@@ -71,7 +73,18 @@ public class Movement : NetworkBehaviour
             return;
         }
 
-        Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        // The leap drives the transform itself; input would fight it.
+        if (leap != null && leap.IsLeaping)
+        {
+            anim.SetFloat("Horizontal", 0f);
+            anim.SetFloat("Vertical", 0f);
+            return;
+        }
+
+        // Stick first, keyboard otherwise - one expression, no platform branch.
+        Vector2 input = TouchControls.Move;
+        if (input.sqrMagnitude < 0.0001f)
+            input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
         // Diagonals used to come out ~41% faster than cardinals.
         if (input.sqrMagnitude > 1f) input.Normalize();

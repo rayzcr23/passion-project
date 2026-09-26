@@ -66,8 +66,13 @@ public class AbilityLoadout : NetworkBehaviour
         }
         LastAttackDirection = dir;
 
-        if (m1 != null && (aim.FireHeld || aim.FirePressed)) m1.TryActivate(dir);
-        if (special != null && Input.GetKeyDown(specialKey)) special.TryActivate(dir);
-        if (super != null && Input.GetKeyDown(superKey)) super.TryActivate(dir);
+        if (m1 != null && (aim.FireHeld || aim.FirePressed || TouchControls.AttackHeld))
+            m1.TryActivate(dir);
+
+        if (special != null && (Input.GetKeyDown(specialKey) || TouchControls.SpecialPressed))
+            special.TryActivate(dir);
+
+        if (super != null && (Input.GetKeyDown(superKey) || TouchControls.SuperPressed))
+            super.TryActivate(dir);
     }
 }

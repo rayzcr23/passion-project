@@ -75,7 +75,7 @@ public class MountState : NetworkBehaviour
             return;
         }
 
-        if (!Input.GetKeyDown(toggleKey)) return;
+        if (!Input.GetKeyDown(toggleKey) && !TouchControls.RidePressed) return;
         if (DialogueUI.Instance != null && DialogueUI.Instance.IsOpen) return;
 
         if (riding.Value) DismountRpc(transform.position);

@@ -28,10 +28,10 @@ GameObject:
   - component: {fileID: 8658368661826215229}
   - component: {fileID: 7209583462873529262}
   - component: {fileID: 1025883747682959137}
-  - component: {fileID: 5498279514177854505}
   - component: {fileID: 7789559839366044460}
   - component: {fileID: 2809974114724371410}
   - component: {fileID: 1914736999584708676}
+  - component: {fileID: 3507493673524911139}
   m_Layer: 9
   m_Name: Warrior
   m_TagString: Player
@@ -420,7 +420,7 @@ MonoBehaviour:
   guard: {fileID: 8658368661826215229}
   m1: {fileID: 9105195392067317132}
   special: {fileID: 7209583462873529262}
-  super: {fileID: 5498279514177854505}
+  super: {fileID: 3507493673524911139}
   aimMode: 0
   specialKey: 113
   superKey: 101
@@ -558,39 +558,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   variants: []
---- !u!114 &5498279514177854505
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 677896895676311075}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2dd43c416dd3de3448538363dff0afa7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  displayName: Hollow Purple
-  cooldown: 1
-  powerCost: 100
-  animatorTrigger: Attack2
-  length: 22
-  width: 2.4
-  chargeSeconds: 0.35
-  hitLayers:
-    serializedVersion: 2
-    m_Bits: 256
-  oneShotsNonBosses: 1
-  bossPercent: 0.35
-  fallbackDamage: 500
-  friendlyFire: 0
-  chargeShake: 0.35
-  fireShake: 1
-  knockback: 12
-  impactPrefab: {fileID: 0}
-  impactBursts: 6
-  impactScale: 1.8
 --- !u!114 &7789559839366044460
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -649,3 +616,35 @@ MonoBehaviour:
   branchLength: 44
   branchSpread: 46
   pointsPerKill: 0.34
+--- !u!114 &3507493673524911139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84798ec868acde940ac22fe76e4ff33a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  displayName: Rain of Swords
+  cooldown: 1
+  powerCost: 100
+  animatorTrigger: Attack2
+  radius: 5.5
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  swordCount: 34
+  duration: 2.6
+  waves: 6
+  normalPercent: 0.22
+  bossPercent: 0.055
+  minimumDamage: 6
+  friendlyFire: 0
+  knockback: 3
+  bladeSprite: {fileID: 21300000, guid: fa65ac1b41328584f9e5e5351c70769d, type: 3}
+  impactPrefab: {fileID: 0}
+  openingShake: 0.55

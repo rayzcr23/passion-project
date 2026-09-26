@@ -48,7 +48,8 @@ public class GuardAbility : NetworkBehaviour
         if (!IsOwner) return;
 
         bool wants = !(death != null && death.IsDead)
-                     && ((useRightMouse && Input.GetMouseButton(1)) || Input.GetKey(key));
+                     && ((useRightMouse && Input.GetMouseButton(1)) || Input.GetKey(key)
+                         || TouchControls.GuardHeld);
 
         // Local animation is immediate; the server copy follows.
         if (anim != null) anim.SetBool("Guard", wants);
