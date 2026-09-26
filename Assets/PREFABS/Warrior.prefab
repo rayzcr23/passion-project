@@ -31,6 +31,7 @@ GameObject:
   - component: {fileID: 5498279514177854505}
   - component: {fileID: 7789559839366044460}
   - component: {fileID: 2809974114724371410}
+  - component: {fileID: 1914736999584708676}
   m_Layer: 9
   m_Name: Warrior
   m_TagString: Player
@@ -243,6 +244,7 @@ MonoBehaviour:
   knockback: {fileID: 8240732805480180369}
   guard: {fileID: 8658368661826215229}
   mount: {fileID: 0}
+  skills: {fileID: 0}
   faceAimAlways: 0
   facingDirection: 1
 --- !u!114 &8053190018001894926
@@ -630,3 +632,20 @@ MonoBehaviour:
   framesPerSecond: 10
   mountOffset: {x: 0, y: -0.34, z: 0}
   mountScale: 1.9
+--- !u!114 &1914736999584708676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c3f1ca08289a9a459f845328e473499, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  seed: 1337
+  branchLength: 44
+  branchSpread: 46
+  pointsPerKill: 0.34

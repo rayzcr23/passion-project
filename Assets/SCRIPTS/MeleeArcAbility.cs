@@ -55,9 +55,14 @@ public class MeleeArcAbility : Ability
         if (!IsServer || NetworkObject == null || !NetworkObject.IsSpawned) yield break;
 
         Vector2 centre = origin != null ? (Vector2)origin.position : (Vector2)transform.position;
-        Collider2D[] candidates = Physics2D.OverlapCircleAll(centre, range, hitLayers);
 
-        float halfArc = arcDegrees * 0.5f;
+        // Skill tree reach and width.
+        float reach = range * (skills != null ? skills.RangeMultiplier : 1f);
+        float arc = arcDegrees + (skills != null ? skills.ArcBonusDegrees : 0f);
+
+        Collider2D[] candidates = Physics2D.OverlapCircleAll(centre, reach, hitLayers);
+
+        float halfArc = Mathf.Min(180f, arc) * 0.5f;
         int hits = 0;
 
         Collider2D ownCollider = GetComponent<Collider2D>();
@@ -67,8 +72,8 @@ public class MeleeArcAbility : Ability
 
         if (debugDraw)
         {
-            Debug.DrawRay(centre, aimDirection.normalized * range, Color.cyan, 1.5f);
-            DrawCircle(centre, range, new Color(1f, 0.5f, 0.2f, 1f), 1.5f);
+            Debug.DrawRay(centre, aimDirection.normalized * reach, Color.cyan, 1.5f);
+            DrawCircle(centre, reach, new Color(1f, 0.5f, 0.2f, 1f), 1.5f);
         }
 
         if (debugLog)
@@ -136,17 +141,18 @@ public class MeleeArcAbility : Ability
                 // Push away from the attacker rather than along the aim, so a
                 // target off to one side is knocked outward, not sideways.
                 Vector2 away = distance > 0.001f ? toTarget / distance : aimDirection;
+                float force = knockback * (skills != null ? skills.KnockbackMultiplier : 1f);
 
                 var receiver = target.GetComponent<KnockbackReceiver>();
                 if (receiver != null)
                 {
-                    receiver.ServerApply(away, knockback);
+                    receiver.ServerApply(away, force);
                 }
                 else
                 {
                     var rb = target.GetComponent<Rigidbody2D>();
                     if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic)
-                        rb.AddForce(away * knockback, ForceMode2D.Impulse);
+                        rb.AddForce(away * force, ForceMode2D.Impulse);
                 }
             }
 

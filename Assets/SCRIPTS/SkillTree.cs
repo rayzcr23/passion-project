@@ -17,7 +17,20 @@ using UnityEngine;
 /// Unlocks are server-authoritative - these bonuses change damage and health.
 public class SkillTree : NetworkBehaviour
 {
-    public enum Stat { Damage, MaxHealth, MoveSpeed, PowerGain, Cooldown }
+    public enum Stat
+    {
+        Damage,
+        MaxHealth,
+        MoveSpeed,
+        PowerGain,
+        Cooldown,
+        Range,        // how far your swing reaches
+        Knockback,
+        Lifesteal,    // heal a fraction of the damage you deal
+        ArcWidth      // how wide the swing is
+    }
+
+    const int StatCount = 9;
 
     public struct Node : INetworkSerializable, IEquatable<Node>
     {
@@ -53,12 +66,22 @@ public class SkillTree : NetworkBehaviour
     readonly HashSet<long> unlockedLookup = new HashSet<long>();
 
     float damageBonus, healthBonus, speedBonus, powerBonus, cooldownBonus;
+    float rangeBonus, knockbackBonus, lifestealBonus, arcBonus;
 
     public float DamageMultiplier => 1f + damageBonus;
     public float HealthBonus => healthBonus;
     public float SpeedMultiplier => 1f + speedBonus;
     public float PowerMultiplier => 1f + powerBonus;
     public float CooldownMultiplier => Mathf.Max(0.25f, 1f - cooldownBonus);
+    public float RangeMultiplier => 1f + rangeBonus;
+    public float KnockbackMultiplier => 1f + knockbackBonus;
+
+    /// Fraction of damage dealt returned as health. Capped so it cannot make you
+    /// unkillable no matter how deep the tree goes.
+    public float Lifesteal => Mathf.Min(0.5f, lifestealBonus);
+
+    /// Added degrees on the swing arc, capped short of a full circle.
+    public float ArcBonusDegrees => Mathf.Min(120f, arcBonus * 260f);
 
     void Awake()
     {
@@ -180,7 +203,7 @@ public class SkillTree : NetworkBehaviour
     public Stat StatOf(long id)
     {
         int h = Hash(id, 3);
-        return (Stat)(((h % 5) + 5) % 5);
+        return (Stat)(((h % StatCount) + StatCount) % StatCount);
     }
 
     public float MagnitudeOf(long id)
@@ -252,6 +275,7 @@ public class SkillTree : NetworkBehaviour
     {
         unlockedLookup.Clear();
         damageBonus = healthBonus = speedBonus = powerBonus = cooldownBonus = 0f;
+        rangeBonus = knockbackBonus = lifestealBonus = arcBonus = 0f;
 
         for (int i = 0; i < Unlocked.Count; i++)
         {
@@ -269,6 +293,10 @@ public class SkillTree : NetworkBehaviour
                 case Stat.MoveSpeed: speedBonus += m; break;
                 case Stat.PowerGain: powerBonus += m; break;
                 case Stat.Cooldown: cooldownBonus += m; break;
+                case Stat.Range: rangeBonus += m; break;
+                case Stat.Knockback: knockbackBonus += m * 2f; break;
+                case Stat.Lifesteal: lifestealBonus += m * 0.35f; break;
+                case Stat.ArcWidth: arcBonus += m; break;
             }
         }
 
@@ -302,7 +330,11 @@ public class SkillTree : NetworkBehaviour
             case Stat.MaxHealth: return new Color(0.45f, 0.88f, 0.52f);
             case Stat.MoveSpeed: return new Color(0.42f, 0.74f, 1f);
             case Stat.PowerGain: return new Color(0.76f, 0.50f, 1f);
-            default: return new Color(1f, 0.82f, 0.40f);
+            case Stat.Cooldown: return new Color(1f, 0.82f, 0.40f);
+            case Stat.Range: return new Color(0.40f, 0.92f, 0.88f);
+            case Stat.Knockback: return new Color(1f, 0.60f, 0.30f);
+            case Stat.Lifesteal: return new Color(0.95f, 0.35f, 0.62f);
+            default: return new Color(0.80f, 0.80f, 0.86f);
         }
     }
 
@@ -313,13 +345,19 @@ public class SkillTree : NetworkBehaviour
 
         if (stat == Stat.MaxHealth) return "+" + Mathf.RoundToInt(m) + " Max Health";
 
+        if (stat == Stat.ArcWidth)
+            return "+" + Mathf.RoundToInt(m * 260f) + " degree Swing Arc";
+
         string name;
         switch (stat)
         {
             case Stat.Damage: name = "Damage"; break;
             case Stat.MoveSpeed: name = "Move Speed"; break;
             case Stat.PowerGain: name = "POW Gain"; break;
-            default: name = "Cooldown Reduction"; break;
+            case Stat.Cooldown: name = "Cooldown Reduction"; break;
+            case Stat.Range: name = "Attack Range"; break;
+            case Stat.Knockback: return "+" + Mathf.RoundToInt(m * 200f) + "% Knockback";
+            default: return "+" + Mathf.RoundToInt(m * 35f) + "% Lifesteal";
         }
         return "+" + Mathf.RoundToInt(m * 100f) + "% " + name;
     }

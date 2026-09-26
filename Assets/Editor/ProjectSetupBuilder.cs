@@ -471,7 +471,7 @@ public static class ProjectSetupBuilder
         MountState mount = Ensure<MountState>(root);
         mount.speedMultiplier = 2.2f;
         mount.mountScale = 1.9f;
-        mount.mountOffset = new Vector3(0f, -0.34f, 0f);
+        mount.mountOffset = new Vector3(0f, -0.46f, 0f);
         mount.mountFrames = LoadSheepFrames();
 
         // The ring is a mid-cost spender now, so POW has two sinks.

@@ -88,7 +88,11 @@ public class Health : NetworkBehaviour
         }
 
         lastAttacker = attackerClientId;
+
+        int before = current.Value;
         current.Value = Mathf.Max(0, current.Value - amount);
+
+        ServerApplyLifesteal(attackerClientId, before - current.Value);
 
         PowerMeter.ServerAwardForDamage(attackerClientId, this, amount);
 
@@ -108,7 +112,30 @@ public class Health : NetworkBehaviour
     public void ServerHeal(int amount)
     {
         if (!IsServer || IsDead || amount <= 0) return;
-        current.Value = Mathf.Min(maxHealth, current.Value + amount);
+        current.Value = Mathf.Min(EffectiveMax, current.Value + amount);
+    }
+
+    /// Heals the attacker for a fraction of what they actually dealt - using the
+    /// damage that landed, not the damage requested, so overkill does not heal.
+    static void ServerApplyLifesteal(ulong attackerClientId, int dealt)
+    {
+        if (attackerClientId == PowerMeter.NoAttacker || dealt <= 0) return;
+
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm == null || !nm.IsServer) return;
+
+        NetworkClient attacker;
+        if (!nm.ConnectedClients.TryGetValue(attackerClientId, out attacker)) return;
+        if (attacker.PlayerObject == null) return;
+
+        var tree = attacker.PlayerObject.GetComponent<SkillTree>();
+        if (tree == null || tree.Lifesteal <= 0f) return;
+
+        int healed = Mathf.RoundToInt(dealt * tree.Lifesteal);
+        if (healed <= 0) return;
+
+        var theirHealth = attacker.PlayerObject.GetComponent<Health>();
+        if (theirHealth != null) theirHealth.ServerHeal(healed);
     }
 
     public void ServerRevive()

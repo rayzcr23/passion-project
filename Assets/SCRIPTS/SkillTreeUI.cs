@@ -13,6 +13,12 @@ public class SkillTreeUI : MonoBehaviour
     public float nodeRadius = 7f;
     public float frontierRadius = 5f;
 
+    [Header("Zoom")]
+    public float zoom = 1f;
+    public float minZoom = 0.35f;
+    public float maxZoom = 2.5f;
+    public float zoomStep = 0.12f;
+
     bool open;
     Vector2 pan;
     Vector2 dragStart;
@@ -78,6 +84,18 @@ public class SkillTreeUI : MonoBehaviour
         }
         else if (e.type == EventType.MouseDrag && dragging) pan = e.mousePosition - dragStart;
         else if (e.type == EventType.MouseUp) dragging = false;
+        else if (e.type == EventType.ScrollWheel && area.Contains(e.mousePosition))
+        {
+            // Zoom toward the cursor, so the node you are looking at stays put
+            // rather than sliding off while you scroll.
+            Vector2 centre = new Vector2(area.x + area.width * 0.5f, area.y + area.height * 0.5f);
+            Vector2 before = (e.mousePosition - centre - pan) / zoom;
+
+            zoom = Mathf.Clamp(zoom * (1f - e.delta.y * zoomStep * 0.1f), minZoom, maxZoom);
+
+            pan = e.mousePosition - centre - before * zoom;
+            e.Use();
+        }
     }
 
     void DrawTree(SkillTree tree, Rect area)
@@ -93,20 +111,20 @@ public class SkillTreeUI : MonoBehaviour
             long parent = SkillTree.ParentOf(id);
             if (parent < 0) continue;
 
-            Vector2 a = origin + Flip(tree.PositionOf(parent));
-            Vector2 b = origin + Flip(tree.PositionOf(id));
+            Vector2 a = origin + Flip(tree.PositionOf(parent)) * zoom;
+            Vector2 b = origin + Flip(tree.PositionOf(id)) * zoom;
 
             bool solid = tree.IsUnlocked(id);
             DrawLine(a, b, solid ? new Color(1f, 1f, 1f, 0.55f) : new Color(1f, 1f, 1f, 0.16f),
-                     solid ? 2.5f : 1.5f);
+                     Mathf.Max(1f, (solid ? 2.5f : 1.5f) * zoom));
         }
 
         foreach (long id in visible)
         {
-            Vector2 p = origin + Flip(tree.PositionOf(id));
+            Vector2 p = origin + Flip(tree.PositionOf(id)) * zoom;
 
             bool unlocked = tree.IsUnlocked(id);
-            float radius = unlocked ? nodeRadius : frontierRadius;
+            float radius = (unlocked ? nodeRadius : frontierRadius) * Mathf.Max(0.5f, zoom);
             var rect = new Rect(p.x - radius, p.y - radius, radius * 2f, radius * 2f);
 
             Color colour = SkillTree.ColourOf(tree.StatOf(id));
@@ -178,8 +196,9 @@ public class SkillTreeUI : MonoBehaviour
             GUI.Label(new Rect(area.x + 30f, y, 320f, 19f), lines[i], small);
         }
 
-        GUI.Label(new Rect(area.xMax - 360f, area.yMax - 28f, 340f, 19f),
-                  "drag to pan   -   click a lit node to unlock", small);
+        GUI.Label(new Rect(area.xMax - 420f, area.yMax - 28f, 400f, 19f),
+                  "drag to pan   -   scroll to zoom (" + zoom.ToString("F1") +
+                  "x)   -   click a lit node", small);
     }
 
     /// GUI space runs downward; the branch maths runs upward.

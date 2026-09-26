@@ -24,7 +24,9 @@ public class MountState : NetworkBehaviour
     public float framesPerSecond = 10f;
     [Tooltip("The sheep is drawn IN FRONT of the rider so its body hides their " +
          "legs - otherwise the knight reads as hovering above it.")]
-    public Vector3 mountOffset = new Vector3(0f, -0.34f, 0f);
+    // Only a little lower: the bouncing animation already lifts and drops the
+    // sheep, so a big gap opens on the down-beat if the rider sits too high.
+    public Vector3 mountOffset = new Vector3(0f, -0.46f, 0f);
     public float mountScale = 1.9f;
 
     readonly NetworkVariable<bool> riding = new NetworkVariable<bool>();
