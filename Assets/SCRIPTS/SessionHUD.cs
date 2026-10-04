@@ -6,14 +6,12 @@ using Unity.Services.Core;
 using Unity.Services.Multiplayer;
 using UnityEngine;
 
-/// Host/join over the internet via Unity Relay.
+/// Host/join over the internet via Unity Relay + Sessions API.
 ///
-/// NetworkHUD's buttons call StartHost/StartClient directly, which only ever
-/// talks to 127.0.0.1 - fine for two windows on one machine, useless for a
-/// friend on another device. The Sessions API allocates a Relay server, hands
-/// back a short join code, and starts Netcode against it.
-///
-/// Do NOT also call NetworkManager.StartHost(): WithRelayNetwork() does that.
+/// Uses WithNetworkOptions(RelayProtocol.WSS) to force WebSocket (wss://)
+/// connections on every platform. This is required for WebGL/browser builds
+/// (iPad Safari, school Chromebooks, etc.) because browsers block raw UDP.
+/// WSS also works fine on PC, so we just always use it.
 public class SessionHUD : MonoBehaviour
 {
     public int maxPlayers = 3;
@@ -22,24 +20,47 @@ public class SessionHUD : MonoBehaviour
     public NetworkHUD localHud;
 
     string joinCodeInput = "";
-    string statusText = "";
-    bool busy;
+    string statusText    = "";
+    bool   busy;
     ISession session;
+
+    // ──────────────────────────────────────────────
+    //  Unity lifecycle
+    // ──────────────────────────────────────────────
 
     void Awake()
     {
+        Application.targetFrameRate = 60;
+        Application.runInBackground = true;
+
+        var nm = GetComponent<NetworkManager>();
+        if (nm != null && nm.NetworkConfig != null)
+            nm.NetworkConfig.TickRate = 60;
+
         if (localHud == null) localHud = GetComponent<NetworkHUD>();
     }
 
+    void OnEnable()
+    {
+        // Two HUDs drawing in the same corner is unreadable, and the local one
+        // would start a conflicting localhost host.
+        if (localHud != null) localHud.enabled = false;
+    }
+
+    // ──────────────────────────────────────────────
+    //  GUI
+    // ──────────────────────────────────────────────
+
     void OnGUI()
     {
-        GUILayout.BeginArea(new Rect(12f, 12f, 260f, 240f));
+        GUILayout.BeginArea(new Rect(12f, 12f, 280f, 280f));
 
-        if (session != null)
+        if (session != null || (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsClient)))
         {
-            GUILayout.Label(session.IsHost ? "HOSTING" : "JOINED");
+            bool isHost = session != null ? session.IsHost : (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost);
+            GUILayout.Label(isHost ? "HOSTING" : "JOINED");
 
-            if (!string.IsNullOrEmpty(session.Code))
+            if (session != null && !string.IsNullOrEmpty(session.Code))
             {
                 GUILayout.Label("Join code:");
                 GUILayout.Label(session.Code, GUI.skin.textField);
@@ -51,7 +72,7 @@ public class SessionHUD : MonoBehaviour
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
                 GUILayout.Label("Players: " + NetworkManager.Singleton.ConnectedClientsIds.Count);
 
-            if (GUILayout.Button("Leave")) Leave();
+            if (GUILayout.Button("Leave / Disconnect")) Leave();
         }
         else if (busy)
         {
@@ -59,7 +80,8 @@ public class SessionHUD : MonoBehaviour
         }
         else
         {
-            if (GUILayout.Button("Host online")) Host();
+            if (GUILayout.Button("Host Online (Relay)")) Host();
+            if (GUILayout.Button("Host Local (Direct)")) HostLocal();
 
             GUILayout.Space(8f);
             GUILayout.Label("Join code:");
@@ -67,23 +89,45 @@ public class SessionHUD : MonoBehaviour
 
             if (GUILayout.Button("Join")) Join(joinCodeInput);
 
-            if (!string.IsNullOrEmpty(statusText)) GUILayout.Label(statusText);
+            if (!string.IsNullOrEmpty(statusText))
+                GUILayout.Label(statusText);
         }
 
         GUILayout.EndArea();
     }
 
+    void HostLocal()
+    {
+        if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
+        {
+            NetworkManager.Singleton.StartHost();
+            statusText = "";
+            Debug.Log("[Wanderers] Hosting locally (Direct Host).");
+        }
+    }
+
+    // ──────────────────────────────────────────────
+    //  Host
+    // ──────────────────────────────────────────────
+
     async void Host()
     {
         if (busy) return;
         busy = true;
-        statusText = "Creating session...";
+        statusText = "Setting up session...";
 
         try
         {
             await EnsureSignedIn();
 
-            var options = new SessionOptions { MaxPlayers = maxPlayers }.WithRelayNetwork();
+            // WithNetworkOptions forces WSS (WebSocket) relay on every platform.
+            // This is the only protocol that works inside a browser (iPad Safari).
+            // It also works on PC, so we always use it.
+            var netOpts = new NetworkOptions { RelayProtocol = RelayProtocol.WSS };
+            var options = new SessionOptions { MaxPlayers = maxPlayers }
+                .WithRelayNetwork()
+                .WithNetworkOptions(netOpts);
+
             session = await MultiplayerService.Instance.CreateSessionAsync(options);
 
             statusText = "";
@@ -91,11 +135,27 @@ public class SessionHUD : MonoBehaviour
         }
         catch (Exception e)
         {
-            statusText = "Host failed: " + e.Message;
-            Debug.LogException(e);
+            Debug.LogWarning("[Wanderers] UGS Online Host failed (" + e.Message + "). Falling back to Direct Host...");
+            session = null;
+            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
+            {
+                bool started = NetworkManager.Singleton.StartHost();
+                if (started)
+                {
+                    statusText = "";
+                    Debug.Log("[Wanderers] Hosting locally (Direct Host).");
+                    return;
+                }
+            }
+            statusText = "Couldn't host online session — fallback to Direct Host.";
+            Debug.LogError("[Wanderers] Host failed: " + e);
         }
         finally { busy = false; }
     }
+
+    // ──────────────────────────────────────────────
+    //  Join
+    // ──────────────────────────────────────────────
 
     async void Join(string code)
     {
@@ -111,18 +171,27 @@ public class SessionHUD : MonoBehaviour
         {
             await EnsureSignedIn();
 
-            session = await MultiplayerService.Instance.JoinSessionByCodeAsync(code);
+            // Force WSS so the browser can reach the relay server.
+            var netOpts = new NetworkOptions { RelayProtocol = RelayProtocol.WSS };
+            session = await MultiplayerService.Instance.JoinSessionByCodeAsync(
+                code,
+                new JoinSessionOptions().WithNetworkOptions(netOpts));
 
             statusText = "";
             Debug.Log("[Wanderers] Joined session " + session.Id);
         }
         catch (Exception e)
         {
-            statusText = "Join failed: " + e.Message;
-            Debug.LogException(e);
+            statusText = "Couldn't join — check the code and try again.";
+            Debug.LogError("[Wanderers] Join failed: " + e);
+            session = null;
         }
         finally { busy = false; }
     }
+
+    // ──────────────────────────────────────────────
+    //  Leave
+    // ──────────────────────────────────────────────
 
     async void Leave()
     {
@@ -134,25 +203,30 @@ public class SessionHUD : MonoBehaviour
         finally
         {
             session = null;
+            statusText = "";
             if (NetworkManager.Singleton != null) NetworkManager.Singleton.Shutdown();
         }
     }
 
-    /// Both calls are safe to reach twice, but not to run twice - guard rather
-    /// than letting a second Host click throw.
+    // ──────────────────────────────────────────────
+    //  Auth helper
+    // ──────────────────────────────────────────────
+
     static async Task EnsureSignedIn()
     {
         if (UnityServices.State != ServicesInitializationState.Initialized)
-            await UnityServices.InitializeAsync();
+        {
+            // Use a unique profile name per session so that multiple browser
+            // tabs (or multiple instances on the same device) each get their
+            // own anonymous player identity.  Without this every tab shares
+            // the same cached token → UGS returns SessionConflict when the
+            // second player tries to join.
+            var options = new InitializationOptions()
+                .SetProfile("player_" + Guid.NewGuid().ToString("N"));
+            await UnityServices.InitializeAsync(options);
+        }
 
         if (!AuthenticationService.Instance.IsSignedIn)
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
-    }
-
-    void OnEnable()
-    {
-        // Two HUDs drawing in the same corner is unreadable, and the local one
-        // would start a conflicting localhost host.
-        if (localHud != null) localHud.enabled = false;
     }
 }
