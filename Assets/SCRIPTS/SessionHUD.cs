@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
@@ -12,6 +13,7 @@ using UnityEngine;
 /// connections on every platform. This is required for WebGL/browser builds
 /// (iPad Safari, school Chromebooks, etc.) because browsers block raw UDP.
 /// WSS also works fine on PC, so we just always use it.
+[DefaultExecutionOrder(-10000)]
 public class SessionHUD : MonoBehaviour
 {
     public int maxPlayers = 3;
@@ -30,14 +32,48 @@ public class SessionHUD : MonoBehaviour
 
     void Awake()
     {
+        DetachNestedGoblins();
+
         Application.targetFrameRate = 60;
         Application.runInBackground = true;
 
         var nm = GetComponent<NetworkManager>();
         if (nm != null && nm.NetworkConfig != null)
+        {
             nm.NetworkConfig.TickRate = 60;
+            nm.NetworkConfig.ClientConnectionBufferTimeout = 30;
+        }
+
+        var transport = GetComponent<UnityTransport>();
+        if (transport != null)
+            transport.UseWebSockets = true;
 
         if (localHud == null) localHud = GetComponent<NetworkHUD>();
+    }
+
+    // Several scene Goblins were accidentally parented beneath another
+    // NetworkObject. NGO then treated all of their NetworkBehaviours as one
+    // object and WebGL froze while preparing the late-join snapshot. Detach
+    // them before any NetworkObject Awake runs, preserving world positions.
+    static void DetachNestedGoblins()
+    {
+        var goblins = FindObjectsByType<EnemyBrain>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        int detached = 0;
+        foreach (var goblin in goblins)
+        {
+            Transform parent = goblin.transform.parent;
+            if (parent == null || parent.GetComponentInParent<NetworkObject>() == null)
+                continue;
+
+            goblin.transform.SetParent(null, true);
+            detached++;
+        }
+
+        if (detached > 0)
+            Debug.Log("[Wanderers] Corrected " + detached + " nested Goblin network objects.");
     }
 
     void OnEnable()
@@ -81,7 +117,9 @@ public class SessionHUD : MonoBehaviour
         else
         {
             if (GUILayout.Button("Host Online (Relay)")) Host();
+#if !UNITY_WEBGL || UNITY_EDITOR
             if (GUILayout.Button("Host Local (Direct)")) HostLocal();
+#endif
 
             GUILayout.Space(8f);
             GUILayout.Label("Join code:");
@@ -98,12 +136,17 @@ public class SessionHUD : MonoBehaviour
 
     void HostLocal()
     {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        statusText = "Direct hosting is not available in a browser. Use Host Online.";
+        return;
+#else
         if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
         {
             NetworkManager.Singleton.StartHost();
             statusText = "";
             Debug.Log("[Wanderers] Hosting locally (Direct Host).");
         }
+#endif
     }
 
     // ──────────────────────────────────────────────
@@ -135,19 +178,8 @@ public class SessionHUD : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogWarning("[Wanderers] UGS Online Host failed (" + e.Message + "). Falling back to Direct Host...");
             session = null;
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
-            {
-                bool started = NetworkManager.Singleton.StartHost();
-                if (started)
-                {
-                    statusText = "";
-                    Debug.Log("[Wanderers] Hosting locally (Direct Host).");
-                    return;
-                }
-            }
-            statusText = "Couldn't host online session — fallback to Direct Host.";
+            statusText = "Couldn't host online. Check your connection and try again.";
             Debug.LogError("[Wanderers] Host failed: " + e);
         }
         finally { busy = false; }
@@ -221,8 +253,11 @@ public class SessionHUD : MonoBehaviour
             // own anonymous player identity.  Without this every tab shares
             // the same cached token → UGS returns SessionConflict when the
             // second player tries to join.
+            // Unity profile names have a 30-character maximum. "player_" plus
+            // 23 GUID characters is exactly 30.
+            string profileId = Guid.NewGuid().ToString("N").Substring(0, 23);
             var options = new InitializationOptions()
-                .SetProfile("player_" + Guid.NewGuid().ToString("N"));
+                .SetProfile("player_" + profileId);
             await UnityServices.InitializeAsync(options);
         }
 
