@@ -52,12 +52,13 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/wanderers of time prototypes.loader.js";
+      var buildVersion = "?v=20261106-user-export-115650";
+      var loaderUrl = buildUrl + "/wanderers of time prototypes.loader.js" + buildVersion;
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/wanderers of time prototypes.data",
-        frameworkUrl: buildUrl + "/wanderers of time prototypes.framework.js",
-        codeUrl: buildUrl + "/wanderers of time prototypes.wasm",
+        dataUrl: buildUrl + "/wanderers of time prototypes.data" + buildVersion,
+        frameworkUrl: buildUrl + "/wanderers of time prototypes.framework.js" + buildVersion,
+        codeUrl: buildUrl + "/wanderers of time prototypes.wasm" + buildVersion,
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "PASSION PROJECT",
