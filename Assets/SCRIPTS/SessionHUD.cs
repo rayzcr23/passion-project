@@ -16,6 +16,8 @@ using UnityEngine;
 [DefaultExecutionOrder(-10000)]
 public class SessionHUD : MonoBehaviour
 {
+    const string PreferredRelayRegion = "asia-southeast1";
+
     public int maxPlayers = 3;
 
     [Tooltip("Hide the local-only NetworkHUD while this is in use.")]
@@ -81,6 +83,19 @@ public class SessionHUD : MonoBehaviour
         // Two HUDs drawing in the same corner is unreadable, and the local one
         // would start a conflicting localhost host.
         if (localHud != null) localHud.enabled = false;
+
+        var nm = GetComponent<NetworkManager>();
+        if (nm != null)
+        {
+            nm.OnTransportFailure -= HandleTransportFailure;
+            nm.OnTransportFailure += HandleTransportFailure;
+        }
+    }
+
+    void OnDisable()
+    {
+        var nm = GetComponent<NetworkManager>();
+        if (nm != null) nm.OnTransportFailure -= HandleTransportFailure;
     }
 
     void Start()
@@ -273,8 +288,12 @@ public class SessionHUD : MonoBehaviour
             // This is the only protocol that works inside a browser (iPad Safari).
             // It also works on PC, so we always use it.
             var netOpts = new NetworkOptions { RelayProtocol = RelayProtocol.WSS };
+            // WebGL QoS is unavailable in several browsers and was repeatedly
+            // falling back to a broken us-central1 allocation. Select a known
+            // active Singapore Relay region explicitly for reliable hosting.
+            var relayOptions = new RelayNetworkOptions(PreferredRelayRegion);
             var options = new SessionOptions { MaxPlayers = maxPlayers }
-                .WithRelayNetwork()
+                .WithRelayNetwork(relayOptions)
                 .WithNetworkOptions(netOpts);
 
             session = await MultiplayerService.Instance.CreateSessionAsync(options);
@@ -289,6 +308,27 @@ public class SessionHUD : MonoBehaviour
             Debug.LogError("[Wanderers] Host failed: " + e);
         }
         finally { busy = false; }
+    }
+
+    async void HandleTransportFailure()
+    {
+        ISession failedSession = session;
+        session = null;
+        busy = false;
+        statusText = "Relay connection failed. Please host or join again.";
+
+        try
+        {
+            if (failedSession != null) await failedSession.LeaveAsync();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("[Wanderers] Could not leave failed session: " + e.Message);
+        }
+
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm != null && nm.IsListening) nm.Shutdown();
+        Debug.LogError("[Wanderers] Relay transport failed; returned to the online menu.");
     }
 
     // ──────────────────────────────────────────────
