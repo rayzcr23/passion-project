@@ -32,7 +32,7 @@ public class SessionHUD : MonoBehaviour
 
     void Awake()
     {
-        DetachNestedGoblins();
+        DetachNestedNetworkObjects();
 
         Application.targetFrameRate = 60;
         Application.runInBackground = true;
@@ -51,29 +51,29 @@ public class SessionHUD : MonoBehaviour
         if (localHud == null) localHud = GetComponent<NetworkHUD>();
     }
 
-    // Several scene Goblins were accidentally parented beneath another
-    // NetworkObject. NGO then treated all of their NetworkBehaviours as one
-    // object and WebGL froze while preparing the late-join snapshot. Detach
-    // them before any NetworkObject Awake runs, preserving world positions.
-    static void DetachNestedGoblins()
+    // NGO does not support one NetworkObject nested beneath another. A number
+    // of scene enemies were accidentally arranged this way, which made WebGL
+    // freeze while preparing a late-join snapshot. Repair every scene object
+    // before NetworkObject.Awake runs and preserve each world position.
+    static void DetachNestedNetworkObjects()
     {
-        var goblins = FindObjectsByType<EnemyBrain>(
+        var networkObjects = FindObjectsByType<NetworkObject>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None);
 
         int detached = 0;
-        foreach (var goblin in goblins)
+        foreach (var networkObject in networkObjects)
         {
-            Transform parent = goblin.transform.parent;
+            Transform parent = networkObject.transform.parent;
             if (parent == null || parent.GetComponentInParent<NetworkObject>() == null)
                 continue;
 
-            goblin.transform.SetParent(null, true);
+            networkObject.transform.SetParent(null, true);
             detached++;
         }
 
         if (detached > 0)
-            Debug.Log("[Wanderers] Corrected " + detached + " nested Goblin network objects.");
+            Debug.Log("[Wanderers] Corrected " + detached + " nested scene NetworkObjects.");
     }
 
     void OnEnable()
@@ -83,15 +83,71 @@ public class SessionHUD : MonoBehaviour
         if (localHud != null) localHud.enabled = false;
     }
 
+    void Start()
+    {
+#if UNITY_EDITOR
+        // Pressing Play in Unity immediately starts a local demo. Start runs
+        // after every component's Awake, so NetworkManager is ready here.
+        StartDemo();
+#endif
+    }
+
     // ──────────────────────────────────────────────
     //  GUI
     // ──────────────────────────────────────────────
 
     void OnGUI()
     {
-        GUILayout.BeginArea(new Rect(12f, 12f, 280f, 280f));
+        // Keep the launcher above dialogue, banners, and other immediate-mode
+        // overlays so the demo button is always reachable in the Game view.
+        GUI.depth = -1000;
 
-        if (session != null || (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsClient)))
+        NetworkManager nm = NetworkManager.Singleton;
+        bool connected = session != null || (nm != null && (nm.IsServer || nm.IsClient));
+
+        if (!connected && !busy)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            DrawOnlineLauncher();
+#else
+            // Centre the actual button in the rendered game. This keeps it in
+            // view even when Unity's Game window is zoomed/cropped to 5x.
+            const float buttonWidth = 360f;
+            const float buttonHeight = 72f;
+            var buttonRect = new Rect(
+                (Screen.width - buttonWidth) * 0.5f,
+                (Screen.height - buttonHeight) * 0.5f,
+                buttonWidth,
+                buttonHeight);
+
+            var demoButton = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 24,
+                fontStyle = FontStyle.Bold
+            };
+
+            Color previousBackground = GUI.backgroundColor;
+            GUI.backgroundColor = new Color(0.35f, 0.9f, 0.45f);
+            if (GUI.Button(buttonRect, "PLAY DEMO", demoButton)) StartDemo();
+            GUI.backgroundColor = previousBackground;
+
+            if (!string.IsNullOrEmpty(statusText))
+            {
+                var statusStyle = new GUIStyle(GUI.skin.label)
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    fontSize = 16
+                };
+                GUI.Label(new Rect(buttonRect.x, buttonRect.yMax + 8f, buttonWidth, 28f), statusText, statusStyle);
+            }
+#endif
+
+            return;
+        }
+
+        GUILayout.BeginArea(new Rect(12f, 12f, 320f, 180f), GUI.skin.box);
+
+        if (connected)
         {
             bool isHost = session != null ? session.IsHost : (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost);
             GUILayout.Label(isHost ? "HOSTING" : "JOINED");
@@ -114,24 +170,74 @@ public class SessionHUD : MonoBehaviour
         {
             GUILayout.Label(statusText);
         }
-        else
-        {
-            if (GUILayout.Button("Host Online (Relay)")) Host();
-#if !UNITY_WEBGL || UNITY_EDITOR
-            if (GUILayout.Button("Host Local (Direct)")) HostLocal();
-#endif
-
-            GUILayout.Space(8f);
-            GUILayout.Label("Join code:");
-            joinCodeInput = GUILayout.TextField(joinCodeInput ?? "", 8);
-
-            if (GUILayout.Button("Join")) Join(joinCodeInput);
-
-            if (!string.IsNullOrEmpty(statusText))
-                GUILayout.Label(statusText);
-        }
 
         GUILayout.EndArea();
+    }
+
+    void DrawOnlineLauncher()
+    {
+        const float panelWidth = 420f;
+        const float panelHeight = 260f;
+        var panelRect = new Rect(
+            (Screen.width - panelWidth) * 0.5f,
+            (Screen.height - panelHeight) * 0.5f,
+            panelWidth,
+            panelHeight);
+
+        GUILayout.BeginArea(panelRect, GUI.skin.box);
+        var titleStyle = new GUIStyle(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            fontSize = 24,
+            fontStyle = FontStyle.Bold
+        };
+
+        GUILayout.Label("WANDERERS OF TIME", titleStyle);
+        GUILayout.Space(12f);
+
+        if (GUILayout.Button("HOST ONLINE GAME", GUILayout.Height(48f))) Host();
+
+        GUILayout.Space(12f);
+        GUILayout.Label("Join code:");
+        joinCodeInput = GUILayout.TextField(joinCodeInput ?? "", 8, GUILayout.Height(32f));
+        if (GUILayout.Button("JOIN ONLINE GAME", GUILayout.Height(48f))) Join(joinCodeInput);
+
+        if (!string.IsNullOrEmpty(statusText))
+            GUILayout.Label(statusText);
+
+        GUILayout.EndArea();
+    }
+
+    void StartDemo()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        statusText = "Demo mode is available inside the Unity Editor.";
+#else
+        NetworkManager nm = NetworkManager.Singleton;
+        if (nm == null)
+        {
+            statusText = "Demo could not start: NetworkManager is missing.";
+            Debug.LogError("[Wanderers] Demo could not start because no NetworkManager exists.");
+            return;
+        }
+
+        if (nm.IsListening) return;
+
+        // Relay uses WebSockets, but an Editor demo should use a normal local
+        // UTP connection and never contact Unity Services.
+        var transport = nm.GetComponent<UnityTransport>();
+        if (transport != null)
+        {
+            transport.UseWebSockets = false;
+            transport.SetConnectionData("127.0.0.1", 7777, "127.0.0.1");
+        }
+
+        bool started = nm.StartHost();
+        statusText = started ? "" : "Demo could not start. Check the Console.";
+        Debug.Log(started
+            ? "[Wanderers] Demo mode started locally."
+            : "[Wanderers] Demo mode failed to start.");
+#endif
     }
 
     void HostLocal()
