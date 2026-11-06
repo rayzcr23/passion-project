@@ -98,15 +98,6 @@ public class SessionHUD : MonoBehaviour
         if (nm != null) nm.OnTransportFailure -= HandleTransportFailure;
     }
 
-    void Start()
-    {
-#if UNITY_EDITOR
-        // Pressing Play in Unity immediately starts a local demo. Start runs
-        // after every component's Awake, so NetworkManager is ready here.
-        StartDemo();
-#endif
-    }
-
     // ──────────────────────────────────────────────
     //  GUI
     // ──────────────────────────────────────────────
@@ -122,41 +113,7 @@ public class SessionHUD : MonoBehaviour
 
         if (!connected && !busy)
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
             DrawOnlineLauncher();
-#else
-            // Centre the actual button in the rendered game. This keeps it in
-            // view even when Unity's Game window is zoomed/cropped to 5x.
-            const float buttonWidth = 360f;
-            const float buttonHeight = 72f;
-            var buttonRect = new Rect(
-                (Screen.width - buttonWidth) * 0.5f,
-                (Screen.height - buttonHeight) * 0.5f,
-                buttonWidth,
-                buttonHeight);
-
-            var demoButton = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 24,
-                fontStyle = FontStyle.Bold
-            };
-
-            Color previousBackground = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.35f, 0.9f, 0.45f);
-            if (GUI.Button(buttonRect, "PLAY DEMO", demoButton)) StartDemo();
-            GUI.backgroundColor = previousBackground;
-
-            if (!string.IsNullOrEmpty(statusText))
-            {
-                var statusStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 16
-                };
-                GUI.Label(new Rect(buttonRect.x, buttonRect.yMax + 8f, buttonWidth, 28f), statusText, statusStyle);
-            }
-#endif
-
             return;
         }
 
@@ -210,12 +167,12 @@ public class SessionHUD : MonoBehaviour
         GUILayout.Label("WANDERERS OF TIME", titleStyle);
         GUILayout.Space(12f);
 
-        if (GUILayout.Button("HOST ONLINE GAME", GUILayout.Height(48f))) Host();
+        if (GUILayout.Button("HOST MULTIPLAYER", GUILayout.Height(48f))) Host();
 
         GUILayout.Space(12f);
         GUILayout.Label("Join code:");
         joinCodeInput = GUILayout.TextField(joinCodeInput ?? "", 8, GUILayout.Height(32f));
-        if (GUILayout.Button("JOIN ONLINE GAME", GUILayout.Height(48f))) Join(joinCodeInput);
+        if (GUILayout.Button("JOIN MULTIPLAYER", GUILayout.Height(48f))) Join(joinCodeInput);
 
         if (!string.IsNullOrEmpty(statusText))
             GUILayout.Label(statusText);
