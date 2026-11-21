@@ -1,4 +1,4 @@
-fileFormatVersion: 2
+﻿fileFormatVersion: 2
 guid: aa3380912f6dedd41ad5db798f5d7691
 TextureImporter:
   internalIDToNameTable: []
@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 30
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -57,453 +57,377 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
-  flipbookRows: 1
-  flipbookColumns: 1
-  maxTextureSizeSet: 0
-  compressionQualitySet: 0
-  textureFormatSet: 0
-  ignorePngGamma: 0
-  applyGammaDecoding: 0
-  swizzle: 50462976
-  cookieLightType: 0
-  platformSettings:
-  - serializedVersion: 4
-    buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Standalone
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
+  flipbookRows: 4
+  flipbookColumns: 4
   spriteSheet:
     serializedVersion: 2
-    sprites:
+  sprites:
     - serializedVersion: 2
       name: House3_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 144
-        width: 32
-        height: 48
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e22a1e390b56a674797d9d70961d6013
-      internalID: -156440052
+      spriteID: ''
+      internalID: 0
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_1
       rect:
         serializedVersion: 2
-        x: 32
-        y: 144
-        width: 32
-        height: 48
+        x: 64
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a16a5a28f5afa404ea856ad77d775882
-      internalID: 523144844
+      spriteID: ''
+      internalID: 1000003
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_2
       rect:
         serializedVersion: 2
-        x: 64
-        y: 144
-        width: 32
-        height: 48
+        x: 128
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d75e48fcc8384354c9d4e403bf3515ed
-      internalID: 961397650
+      spriteID: ''
+      internalID: 2000006
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_3
       rect:
         serializedVersion: 2
-        x: 96
-        y: 144
-        width: 32
-        height: 48
+        x: 192
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 23a03448366087e498cc41a68cba2a0d
-      internalID: 1688687844
+      spriteID: ''
+      internalID: 3000009
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_4
       rect:
         serializedVersion: 2
         x: 0
-        y: 96
-        width: 32
-        height: 48
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1ef3ddebd24ee2249bdbd9057b7f6920
-      internalID: -1022694638
+      spriteID: ''
+      internalID: 4000012
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_5
       rect:
         serializedVersion: 2
-        x: 32
-        y: 96
-        width: 32
-        height: 48
+        x: 64
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cbf75e3575bbc0743a2f465653bbf5b1
-      internalID: -1749202887
+      spriteID: ''
+      internalID: 5000015
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_6
       rect:
         serializedVersion: 2
-        x: 64
-        y: 96
-        width: 32
-        height: 48
+        x: 128
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 80ed6fc180dd50b4cb449c133e7ae452
-      internalID: 1812243023
+      spriteID: ''
+      internalID: 6000018
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_7
       rect:
         serializedVersion: 2
-        x: 96
-        y: 96
-        width: 32
-        height: 48
+        x: 192
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0eaa9d580a0e61a47914cc6721f883df
-      internalID: -1772125447
+      spriteID: ''
+      internalID: 7000021
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_8
       rect:
         serializedVersion: 2
         x: 0
-        y: 48
-        width: 32
-        height: 48
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 12d9837197b3d6848a72b1e42991c121
-      internalID: 2023913070
+      spriteID: ''
+      internalID: 8000024
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_9
       rect:
         serializedVersion: 2
-        x: 32
-        y: 48
-        width: 32
-        height: 48
+        x: 64
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 110697e4b6a20ec4a94638bea735fdc6
-      internalID: -90521170
+      spriteID: ''
+      internalID: 9000027
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_10
       rect:
         serializedVersion: 2
-        x: 64
-        y: 48
-        width: 32
-        height: 48
+        x: 128
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d5e3ca93f8a19654188b13de36a1ee1c
-      internalID: 1006281808
+      spriteID: ''
+      internalID: 10000030
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_11
       rect:
         serializedVersion: 2
-        x: 96
-        y: 48
-        width: 32
-        height: 48
+        x: 192
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1edba9230d291564ca8f60d991f2f800
-      internalID: 1038127144
+      spriteID: ''
+      internalID: 11000033
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d142a2cfc3ea7314a8b3cd134a635d62
-      internalID: -578540629
+      spriteID: ''
+      internalID: 12000036
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
       name: House3_13
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 0
-        width: 32
-        height: 48
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ec08bfb4db6e6ee4f98e16085ccc7bfc
-      internalID: 116927445
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: House3_14
       rect:
         serializedVersion: 2
         x: 64
         y: 0
-        width: 32
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1375e6ebaa0f72a499eb8446b846df82
-      internalID: 1203222081
+      spriteID: ''
+      internalID: 13000039
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    - serializedVersion: 2
+      weights: []    - serializedVersion: 2
+      name: House3_14
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: ''
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ''
+      internalID: 14000042
+      vertices: []
+      indices: ''
+      edges: []
+      weights: []    - serializedVersion: 2
       name: House3_15
       rect:
         serializedVersion: 2
-        x: 96
+        x: 192
         y: 0
-        width: 32
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
+      customData: ''
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e47342bab64ad35428737655013c5d69
-      internalID: -578811601
+      spriteID: ''
+      internalID: 15000045
       vertices: []
-      indices: 
+      indices: ''
       edges: []
-      weights: []
-    outline: []
-    customData: 
+      weights: []    outline: []
+    customData: ''
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
-    indices: 
+    indices: ''
     edges: []
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      House3_0: -156440052
-      House3_1: 523144844
-      House3_10: 1006281808
-      House3_11: 1038127144
-      House3_12: -578540629
-      House3_13: 116927445
-      House3_14: 1203222081
-      House3_15: -578811601
-      House3_2: 961397650
-      House3_3: 1688687844
-      House3_4: -1022694638
-      House3_5: -1749202887
-      House3_6: 1812243023
-      House3_7: -1772125447
-      House3_8: 2023913070
-      House3_9: -90521170
+      House3_0: 0
+      House3_1: 1000003
+      House3_2: 2000006
+      House3_3: 3000009
+      House3_4: 4000012
+      House3_5: 5000015
+      House3_6: 6000018
+      House3_7: 7000021
+      House3_8: 8000024
+      House3_9: 9000027
+      House3_10: 10000030
+      House3_11: 11000033
+      House3_12: 12000036
+      House3_13: 13000039
+      House3_14: 14000042
+      House3_15: 15000045
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

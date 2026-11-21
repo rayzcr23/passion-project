@@ -31,12 +31,21 @@ public class DialogueUI : MonoBehaviour
             {
                 centred = new GUIStyle(GUI.skin.label);
                 centred.alignment = TextAnchor.MiddleCenter;
-                centred.fontSize = 12;
+                centred.fontSize = Scaled(12);
                 centred.normal.textColor = Color.white;
             }
             return centred;
         }
     }
+
+    /// Scale factor relative to a 96-dpi baseline.
+    /// iPads report ~264 dpi, so this returns ~2.75 there.
+    /// Clamped to [1, 3] so nothing goes crazy on very unusual screens.
+    static float UIScale =>
+        Mathf.Clamp(Screen.dpi > 0 ? Screen.dpi / 96f : 1f, 1f, 3f);
+
+    static int Scaled(int px) => Mathf.RoundToInt(px * UIScale);
+    static float Scaled(float px) => px * UIScale;
 
     void Awake()
     {
@@ -92,17 +101,20 @@ public class DialogueUI : MonoBehaviour
 
     void DrawDialogue()
     {
-        float width = Mathf.Min(720f, Screen.width - 60f);
-        float height = 130f;
-        var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - height - 30f, width, height);
+        float scale  = UIScale;
+        float width  = Mathf.Min(Scaled(720f), Screen.width - Scaled(60f));
+        float height = Scaled(130f);
+        var rect = new Rect((Screen.width - width) * 0.5f,
+                            Screen.height - height - Scaled(30f),
+                            width, height);
 
         GUI.Box(rect, GUIContent.none, box);
 
-        GUI.Label(new Rect(rect.x + 18f, rect.y + 12f, width - 36f, 24f), speaker, name_);
-        GUI.Label(new Rect(rect.x + 18f, rect.y + 42f, width - 36f, 60f), lines[index], body);
+        GUI.Label(new Rect(rect.x + Scaled(18f), rect.y + Scaled(12f), width - Scaled(36f), Scaled(24f)), speaker, name_);
+        GUI.Label(new Rect(rect.x + Scaled(18f), rect.y + Scaled(42f), width - Scaled(36f), Scaled(70f)), lines[index], body);
 
         string hint = index < lines.Length - 1 ? "[Space] continue" : "[Space] end";
-        GUI.Label(new Rect(rect.x + width - 150f, rect.y + height - 26f, 140f, 20f), hint, body);
+        GUI.Label(new Rect(rect.x + width - Scaled(150f), rect.y + height - Scaled(26f), Scaled(140f), Scaled(20f)), hint, body);
     }
 
     void DrawQuestLog()
@@ -113,30 +125,30 @@ public class DialogueUI : MonoBehaviour
         var active = qm.ActiveQuests();
         if (active.Count == 0) return;
 
-        const float rowPlain = 22f;
-        const float rowCounted = 40f;
+        float rowPlain   = Scaled(22f);
+        float rowCounted = Scaled(40f);
 
-        float width = 300f;
-        float height = 30f;
+        float width  = Scaled(300f);
+        float height = Scaled(30f);
         foreach (var q in active) height += q.counted ? rowCounted : rowPlain;
 
-        var rect = new Rect(Screen.width - width - 14f, 120f, width, height);
+        var rect = new Rect(Screen.width - width - Scaled(14f), Scaled(120f), width, height);
 
         GUI.Box(rect, GUIContent.none, box);
-        GUI.Label(new Rect(rect.x + 12f, rect.y + 6f, width - 24f, 20f), "Quests  [J]", name_);
+        GUI.Label(new Rect(rect.x + Scaled(12f), rect.y + Scaled(6f), width - Scaled(24f), Scaled(20f)), "Quests  [J]", name_);
 
-        float y = rect.y + 28f;
+        float y = rect.y + Scaled(28f);
 
         foreach (var q in active)
         {
-            GUI.Label(new Rect(rect.x + 12f, y, width - 24f, 20f), q.title, body);
+            GUI.Label(new Rect(rect.x + Scaled(12f), y, width - Scaled(24f), Scaled(20f)), q.title, body);
 
             if (!q.counted) { y += rowPlain; continue; }
 
-            var bar = new Rect(rect.x + 12f, y + 20f, width - 70f, 9f);
+            var bar = new Rect(rect.x + Scaled(12f), y + Scaled(20f), width - Scaled(70f), Scaled(9f));
             DrawBar(bar, q.Fraction);
 
-            GUI.Label(new Rect(bar.xMax + 6f, y + 15f, 50f, 20f),
+            GUI.Label(new Rect(bar.xMax + Scaled(6f), y + Scaled(15f), Scaled(50f), Scaled(20f)),
                       q.counter + "/" + q.required, body);
 
             y += rowCounted;
@@ -177,12 +189,12 @@ public class DialogueUI : MonoBehaviour
         box.border = new RectOffset(2, 2, 2, 2);
 
         name_ = new GUIStyle(GUI.skin.label);
-        name_.fontSize = 15;
+        name_.fontSize = Scaled(15);
         name_.fontStyle = FontStyle.Bold;
         name_.normal.textColor = new Color(1f, 0.85f, 0.4f);
 
         body = new GUIStyle(GUI.skin.label);
-        body.fontSize = 13;
+        body.fontSize = Scaled(13);
         body.wordWrap = true;
         body.normal.textColor = Color.white;
     }

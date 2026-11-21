@@ -5,6 +5,18 @@ using UnityEngine;
 /// Canvas. Replace with a real lobby screen once connection is proven.
 public class NetworkHUD : MonoBehaviour
 {
+    void Awake()
+    {
+        Application.targetFrameRate = 60;
+        Application.runInBackground = true;
+
+        var nm = GetComponent<NetworkManager>();
+        if (nm != null && nm.NetworkConfig != null)
+        {
+            nm.NetworkConfig.TickRate = 60;
+        }
+    }
+
     void OnGUI()
     {
         NetworkManager nm = NetworkManager.Singleton;

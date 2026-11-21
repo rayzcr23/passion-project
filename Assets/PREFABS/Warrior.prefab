@@ -32,6 +32,8 @@ GameObject:
   - component: {fileID: 2809974114724371410}
   - component: {fileID: 1914736999584708676}
   - component: {fileID: 3507493673524911139}
+  - component: {fileID: 7018783107521266666}
+  - component: {fileID: 4750386808639921492}
   m_Layer: 9
   m_Name: Warrior
   m_TagString: Player
@@ -207,14 +209,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3052972476
+  GlobalObjectIdHash: 2559701235
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -245,6 +247,8 @@ MonoBehaviour:
   guard: {fileID: 8658368661826215229}
   mount: {fileID: 0}
   skills: {fileID: 0}
+  leap: {fileID: 0}
+  loadout: {fileID: 0}
   faceAimAlways: 0
   facingDirection: 1
 --- !u!114 &8053190018001894926
@@ -306,14 +310,14 @@ MonoBehaviour:
   RotationInterpolationType: 0
   ScaleInterpolationType: 0
   PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
+  PositionMaxInterpolationTime: 0.15
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
   ScaleMaxInterpolationTime: 0.1
   AuthorityMode: 1
   TickSyncChildren: 0
-  UseUnreliableDeltas: 0
+  UseUnreliableDeltas: 1
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 0
@@ -323,7 +327,7 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.001
+  PositionThreshold: 0.025
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
@@ -349,6 +353,7 @@ MonoBehaviour:
   aimOrigin: {fileID: 6542146264403199364}
   aimZoneLeftEdge: 0
   touchHoldToFire: 1
+  touchToFire: 0
   mouseHoldToFire: 1
   aimDeadzone: 0.35
   debugDrawAim: 1
@@ -397,7 +402,7 @@ MonoBehaviour:
   maxTargets: 8
   pointBlankRadius: 1
   friendlyFire: 1
-  windupSeconds: 0.15
+  windupSeconds: 0.04
   knockback: 4.5
   debugDraw: 1
   debugLog: 1
@@ -419,8 +424,15 @@ MonoBehaviour:
   movement: {fileID: 0}
   guard: {fileID: 8658368661826215229}
   m1: {fileID: 9105195392067317132}
-  special: {fileID: 7209583462873529262}
+  special: {fileID: 7018783107521266666}
   super: {fileID: 3507493673524911139}
+  bow: {fileID: 4750386808639921492}
+  hasBow: 0
+  isBowEquipped: 0
+  weaponSwapKey: 9
+  iceAbility: {fileID: 0}
+  hasIceAbility: 0
+  iceAbilityKey: 103
   aimMode: 0
   specialKey: 113
   superKey: 101
@@ -648,3 +660,62 @@ MonoBehaviour:
   bladeSprite: {fileID: 21300000, guid: fa65ac1b41328584f9e5e5351c70769d, type: 3}
   impactPrefab: {fileID: 0}
   openingShake: 0.55
+--- !u!114 &7018783107521266666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b67621e3e962f3d438da0a46a8fc5799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  displayName: Executioner's Leap
+  cooldown: 1
+  powerCost: 35
+  animatorTrigger: Attack2
+  maxRange: 100
+  minRange: 0.8
+  distance: 15
+  airSeconds: 0.6
+  arcHeight: 1.1
+  maxChargeTime: 1.5
+  chargeMoveSpeedMultiplier: 0.45
+  maxChargeDamageMultiplier: 1.8
+  maxChargeRadiusMultiplier: 1.4
+  maxHoldSeconds: 3.5
+  impactRadius: 2.3
+  damage: 26
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  knockback: 9
+  friendlyFire: 0
+  landShake: 0.5
+  impactPrefab: {fileID: 0}
+  crackCount: 9
+  indicatorColor: {r: 1, g: 0.7, b: 0.2, a: 0.85}
+  indicatorReadyColor: {r: 1, g: 0.25, b: 0.1, a: 1}
+--- !u!114 &4750386808639921492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677896895676311075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b711a200000000000000000000000002, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  displayName: Ability
+  cooldown: 1
+  powerCost: 0
+  animatorTrigger: 
+  arrowPrefab: {fileID: 7293749505155150692, guid: 7859fbb328c6f6b4097d083f1ec537d8, type: 3}
+  forwardOffset: 0.6
+  arrowDamage: 20

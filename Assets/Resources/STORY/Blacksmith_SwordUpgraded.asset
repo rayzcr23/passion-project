@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
+  m_Name: Blacksmith_SwordUpgraded
+  m_EditorClassIdentifier: 
+  speakerName: Blacksmith
+  lines:
+  - By the forge fires! You actually collected all 20 pieces — impressive dedication.
+  - "*hammers sword on anvil*"
+  - There! I've reforged your blade with iron-hardened steel. It hits harder now.
+  - One more thing — word is a powerful boss lurks beyond these lands to the north.
+  - A blade like yours... you might actually have a chance. Go find it when you're ready.
+  startsQuest: {fileID: 0}
+  inProgressLines: []
+  completedLines:
+  - Your blade is ready. The boss waits to the north — go when you feel strong enough.

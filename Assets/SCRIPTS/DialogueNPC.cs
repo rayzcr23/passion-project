@@ -35,9 +35,57 @@ public class DialogueNPC : MonoBehaviour
     /// Raised on the client that finished a conversation, so QuestTrigger can
     /// stage a beat on a specific line landing rather than on a kill count.
     public static event Action<DialogueData> ConversationFinished;
+    public static event Action<DialogueNPC, DialogueData> ConversationFinishedByNpc;
 
     bool playerInRange;
     DialogueData active;
+
+    /// Returns true if the local player is currently within talking range of any NPC.
+    public static bool IsAnyNpcInRange
+    {
+        get
+        {
+            var npcs = FindObjectsByType<DialogueNPC>(FindObjectsSortMode.None);
+            foreach (var n in npcs)
+            {
+                if (n != null && n.playerInRange) return true;
+            }
+            return false;
+        }
+    }
+
+    void Start()
+    {
+        interactKey = KeyCode.F;
+
+        // The fisherman lives on the far side of the map and gets his lines from
+        // Resources - but the blacksmith village sits past x = 25 as well, so never
+        // let this override touch the blacksmith's own conversation.
+        bool isBlacksmith = name.ToLower().Contains("blacksmith") ||
+                            (npcId != null && npcId.ToLower().Contains("blacksmith"));
+
+        if (!isBlacksmith && transform.position.x > 25f && (dialogue == null || dialogue.name.Contains("Villager")))
+        {
+            // Load from Resources/STORY so they're always found even if not scene-referenced.
+            var bowGrant = Resources.Load<DialogueData>("STORY/Fisherman_BowGrant");
+            var guide    = Resources.Load<DialogueData>("STORY/Fisherman_BlacksmithGuide");
+
+            // Conversation chain:
+            //  [0] Fisherman_BowGrant        — first talk: grants bow, starts goblin quest
+            //  [1] Fisherman_BlacksmithGuide — unlocks only after the full quest chain
+            //                                  (goblins → fish) is complete
+            if (bowGrant != null || guide != null)
+            {
+                npcId = "fisherman";
+                dialogue = null; // use conversations[] instead
+
+                var chain = new System.Collections.Generic.List<DialogueData>();
+                if (bowGrant != null) chain.Add(bowGrant);
+                if (guide    != null) chain.Add(guide);
+                conversations = chain.ToArray();
+            }
+        }
+    }
 
     void Update()
     {
@@ -51,7 +99,7 @@ public class DialogueNPC : MonoBehaviour
         // Do not reopen the conversation we are already having.
         if (DialogueUI.Instance.IsOpen) return;
 
-        if (Input.GetKeyDown(interactKey)) Talk();
+        if (Input.GetKeyDown(interactKey) || TouchControls.InteractPressed) Talk();
     }
 
     void Talk()
@@ -79,11 +127,18 @@ public class DialogueNPC : MonoBehaviour
 
             if (i > 0)
             {
-                // The gate is the previous chapter's quest. No quest there means
-                // it was pure conversation, so the chapter opens immediately.
+                // Walk the entire nextQuest chain from the previous chapter.
+                // All quests in the chain must be complete before this chapter unlocks.
+                // e.g. BowGrant starts quest_tnt_goblins whose nextQuest is quest_giant_fish,
+                // so BlacksmithGuide only unlocks once BOTH quests are done.
                 QuestDefinition gate = list[i - 1] != null ? list[i - 1].startsQuest : null;
-
-                if (gate != null && (qm == null || !qm.IsComplete(gate.questId))) break;
+                bool chainComplete = true;
+                while (gate != null)
+                {
+                    if (qm == null || !qm.IsComplete(gate.questId)) { chainComplete = false; break; }
+                    gate = gate.nextQuest;
+                }
+                if (!chainComplete) break;
             }
             chosen = list[i];
         }
@@ -109,6 +164,40 @@ public class DialogueNPC : MonoBehaviour
     void OnConversationEnded()
     {
         if (active != null && ConversationFinished != null) ConversationFinished(active);
+        if (active != null && ConversationFinishedByNpc != null) ConversationFinishedByNpc(this, active);
+
+        // Only the lake fisherman drives the village event - the village blacksmith
+        // has his own iron questline and must not hand out a bow or start the assault.
+        bool isFisherman = (active != null && (active.name.ToLower().Contains("fisher") || (active.speakerName != null && active.speakerName.ToLower().Contains("fisher"))))
+                         || (name != null && name.ToLower().Contains("fisher"))
+                         || (npcId != null && npcId.ToLower().Contains("fisher"));
+
+        if (isFisherman)
+        {
+            var villageEvent = BlacksmithVillageEvent.EnsureVillageInstance();
+            if (villageEvent != null)
+            {
+                if (villageEvent.isFishDefeated)
+                {
+                    // Make sure fisherman #1 is deactivated — even if the instant
+                    // swap in OnFishDefeated() was missed (e.g. offline or late join).
+                    if (villageEvent.blacksmithNpc != null)
+                        villageEvent.blacksmithNpc.gameObject.SetActive(false);
+                }
+                else
+                {
+                    villageEvent.GrantBowToLocalPlayer();
+                    if (NetworkManager.Singleton == null || NetworkManager.Singleton.IsServer)
+                    {
+                        if (!villageEvent.isEventStarted) villageEvent.ServerStartGoblinAssault();
+                    }
+                    else
+                    {
+                        villageEvent.RequestStartAssaultRpc();
+                    }
+                }
+            }
+        }
 
         QuestManager qm = QuestManager.Instance;
         if (qm == null || active == null) return;
@@ -139,7 +228,8 @@ public class DialogueNPC : MonoBehaviour
         if (screen.z < 0f) return;
 
         var rect = new Rect(screen.x - 70f, Screen.height - screen.y - 14f, 140f, 26f);
-        GUI.Label(rect, "[" + interactKey + "] Talk", DialogueUI.CentredLabel);
+        string prompt = TouchControls.TouchModeActive ? "Press TALK" : "[" + interactKey + "] Talk";
+        GUI.Label(rect, prompt, DialogueUI.CentredLabel);
     }
 
     void OnDrawGizmosSelected()

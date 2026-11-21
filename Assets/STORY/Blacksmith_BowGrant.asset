@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
+  m_Name: Blacksmith_BowGrant
+  m_EditorClassIdentifier: 
+  speakerName: Blacksmith
+  lines:
+  - Traveler! Goblins found dynamite and are attacking our village!
+  - Take this hunting bow. Aim with your mouse and Left-Click to pick them off!
+  - Defeat 4 TNT Goblins before they blow us to pieces!
+  startsQuest: {fileID: 11400000, guid: d1110000000000000000000000000001, type: 2}
+  inProgressLines:
+  - The dynamite goblins are still attacking! Use your bow!
+  completedLines:
+  - You saved our village from the explosive menace!

@@ -59,9 +59,16 @@ public class QuestManager : NetworkBehaviour
 
     public QuestDefinition Find(string questId)
     {
-        if (quests == null) return null;
-        foreach (QuestDefinition q in quests)
+        if (quests != null)
+        {
+            foreach (QuestDefinition q in quests)
+                if (q != null && q.questId == questId) return q;
+        }
+
+        var all = Resources.FindObjectsOfTypeAll<QuestDefinition>();
+        foreach (var q in all)
             if (q != null && q.questId == questId) return q;
+
         return null;
     }
 
@@ -114,9 +121,17 @@ public class QuestManager : NetworkBehaviour
             if (def.targetId != creatureId) continue;
 
             p.counter++;
-            if (p.counter >= def.requiredCount) p.state = 2;
-
-            Entries[i] = p;
+            if (p.counter >= def.requiredCount)
+            {
+                p.state = 2;
+                Entries[i] = p;
+                // Auto-start the next quest in the chain.
+                if (def.nextQuest != null) ServerStart(def.nextQuest.questId);
+            }
+            else
+            {
+                Entries[i] = p;
+            }
         }
     }
 
@@ -136,6 +151,8 @@ public class QuestManager : NetworkBehaviour
 
             p.state = 2;
             Entries[i] = p;
+            // Auto-start the next quest in the chain.
+            if (def.nextQuest != null) ServerStart(def.nextQuest.questId);
         }
     }
 

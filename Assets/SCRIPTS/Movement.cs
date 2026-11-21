@@ -14,6 +14,7 @@ public class Movement : NetworkBehaviour
     public MountState mount;                // optional: set automatically if present
     public SkillTree skills;                // optional: set automatically if present
     public LeapAbility leap;                // optional: set automatically if present
+    public AbilityLoadout loadout;          // optional: set automatically if present
     [Tooltip("On: body tracks the cursor constantly (twin-stick feel). Off: body " +
          "follows movement and only turns to the aim while attacking. Off is right " +
          "for keyboard movement - the camera lags behind you as you walk, so a " +
@@ -40,6 +41,7 @@ public class Movement : NetworkBehaviour
         if (mount == null) mount = GetComponent<MountState>();
         if (skills == null) skills = GetComponent<SkillTree>();
         if (leap == null) leap = GetComponent<LeapAbility>();
+        if (loadout == null) loadout = GetComponent<AbilityLoadout>();
     }
 
     public override void OnNetworkSpawn()
@@ -76,6 +78,7 @@ public class Movement : NetworkBehaviour
         // The leap drives the transform itself; input would fight it.
         if (leap != null && leap.IsLeaping)
         {
+            if (rb != null) rb.linearVelocity = Vector2.zero;
             anim.SetFloat("Horizontal", 0f);
             anim.SetFloat("Vertical", 0f);
             return;
@@ -97,6 +100,7 @@ public class Movement : NetworkBehaviour
 
         // One source of truth for speed: the shield slows you, the sheep speeds you up.
         float speedScale = (guard != null && guard.IsBlocking) ? guard.moveSpeedMultiplier : 1f;
+        if (leap != null && leap.IsCharging) speedScale *= leap.chargeMoveSpeedMultiplier;
         if (mount != null) speedScale *= mount.SpeedScale;
         if (skills != null) speedScale *= skills.SpeedMultiplier;
         if (input.sqrMagnitude > 0.0001f) LastMoveDirection = input.normalized;
@@ -104,10 +108,10 @@ public class Movement : NetworkBehaviour
         rb.linearVelocity = input * speed * speedScale;
 
         // Facing follows movement. The pointer is consulted ONLY when faceAimAlways
-        // is deliberately switched on - attacking must never yank the body around,
-        // which read as a twitch toward the cursor on every swing.
-        bool useAim = faceAimAlways && aim != null && aim.HasAim;
-        float face = useAim ? aim.AimDirection.x : input.x;
+        // is deliberately switched on or while charging a targeted ability - attacking
+        // must never yank the body around, which read as a twitch toward the cursor on every swing.
+        bool useAim = (faceAimAlways && aim != null && aim.HasAim) || (leap != null && leap.IsCharging);
+        float face = useAim && aim != null && aim.HasAim ? aim.AimDirection.x : input.x;
         if (face > 0.01f) SetFacing(1);
         else if (face < -0.01f) SetFacing(-1);
     }

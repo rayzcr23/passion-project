@@ -17,6 +17,9 @@ public class AimInput : NetworkBehaviour
                                             // on-screen movement stick on the left.
     public bool touchHoldToFire = true;     // keep firing while the finger is down
 
+    [Tooltip("When disabled, touching the world only aims. Mobile attacks must use the ATK button.")]
+    public bool touchToFire = false;
+
     [Header("Desktop")]
     public bool mouseHoldToFire = true;
 
@@ -35,6 +38,22 @@ public class AimInput : NetworkBehaviour
     public bool FireHeld { get; private set; }
     public bool FirePressed { get; private set; }
     public bool HasAim { get; private set; }
+
+    /// Exact world-space position of the mouse or active touch.
+    public Vector2 PointerWorldPosition
+    {
+        get
+        {
+            if (cam == null) cam = ResolveCamera();
+            if (cam != null && Input.touchCount == 0)
+            {
+                float zDepth = Mathf.Abs(cam.transform.position.z - (aimOrigin != null ? aimOrigin.position.z : transform.position.z));
+                if (zDepth < 0.1f) zDepth = 10f;
+                return cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, zDepth));
+            }
+            return lastPointerWorld;
+        }
+    }
 
     Camera cam;
     int activeTouchId = -1;
@@ -59,8 +78,22 @@ public class AimInput : NetworkBehaviour
         if (cam == null) cam = ResolveCamera();
         FirePressed = false;
 
-        if (Input.touchCount > 0) ReadTouch();
-        else ReadMouse();
+        if (Input.touchCount > 0)
+        {
+            ReadTouch();
+        }
+        else if (TouchControls.TouchModeActive)
+        {
+            // Mobile browsers can leave a synthetic mouse button held after a
+            // touch ends. Mobile firing is owned exclusively by the ATK button.
+            activeTouchId = -1;
+            FireHeld = false;
+            FirePressed = false;
+        }
+        else
+        {
+            ReadMouse();
+        }
 
         if (debugDrawAim && HasAim && aimOrigin != null)
         {
@@ -79,10 +112,11 @@ public class AimInput : NetworkBehaviour
                 Touch t = Input.GetTouch(i);
                 if (t.phase != TouchPhase.Began) continue;
                 if (t.position.x / Screen.width < aimZoneLeftEdge) continue;
+                if (TouchControls.IsTouchOverControls(t.position)) continue;
 
                 activeTouchId = t.fingerId;
                 PointAt(t.position);
-                FirePressed = true;
+                FirePressed = touchToFire;
                 break;
             }
         }
@@ -102,7 +136,7 @@ public class AimInput : NetworkBehaviour
             if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) break;
 
             PointAt(t.position);
-            FireHeld = touchHoldToFire;
+            FireHeld = touchToFire && touchHoldToFire;
             return;
         }
 
@@ -145,6 +179,7 @@ public class AimInput : NetworkBehaviour
         if (zDepth < 0.1f) zDepth = 10f;
         Vector3 screenPos3 = new Vector3(screenPos.x, screenPos.y, zDepth);
         Vector2 world = cam.ScreenToWorldPoint(screenPos3);
+        lastPointerWorld = world;
         Vector2 delta = world - (Vector2)aimOrigin.position;
 
         // Pointer sitting on the character: keep the last good aim rather than
@@ -153,6 +188,5 @@ public class AimInput : NetworkBehaviour
 
         AimDirection = delta.normalized;
         HasAim = true;
-        lastPointerWorld = world;
     }
 }

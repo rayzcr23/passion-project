@@ -49,6 +49,9 @@ public class SheepBrain : NetworkBehaviour
         home = transform.position;
         target = home;
 
+        // Remote copies are positioned by NetworkTransform; dynamic physics must not fight it.
+        if (!IsServer && rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
+
         if (IsServer)
         {
             lastKnownHealth = health.Current;

@@ -493,11 +493,21 @@ public static class ProjectSetupBuilder
         leap.cooldown = 1f;
         leap.powerCost = 35f;
         leap.animatorTrigger = "Attack2";
-        leap.distance = 4.2f;
+        leap.distance = 7.5f;
+        leap.maxRange = 7.5f;
+        leap.minRange = 0.8f;
+        leap.maxChargeTime = 0.85f;
+        leap.chargeMoveSpeedMultiplier = 0.45f;
+        leap.maxChargeDamageMultiplier = 1.8f;
+        leap.maxChargeRadiusMultiplier = 1.4f;
         leap.impactRadius = 2.3f;
         leap.damage = 26;
         leap.hitLayers = (1 << enemyLayer);
         leap.impactPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DeathPoofPrefab);
+
+        GlacialBurstAbility glacial = Ensure<GlacialBurstAbility>(root);
+        glacial.hitLayers = (1 << enemyLayer);
+        glacial.powerCost = 35f;
 
         // The orbiting ring stays on the prefab but is no longer bound to a slot.
         ring.powerCost = 35f;
@@ -506,8 +516,10 @@ public static class ProjectSetupBuilder
         loadout.aim = aim;
         loadout.m1 = swing;
         loadout.aimMode = AbilityLoadout.AimMode.Facing;   // hitbox sits in front of the sprite
-        loadout.special = leap;                            // Q
-        loadout.super = rain;                              // E
+        loadout.special = leap;                            // Q (Executioner's Leap)
+        loadout.super = rain;                              // E (Blade Rain)
+        loadout.iceAbility = glacial;                      // F (Glacial Burst)
+        loadout.hasIceAbility = true;
         loadout.death = death;
         loadout.guard = guard;
 
@@ -548,6 +560,17 @@ public static class ProjectSetupBuilder
             SerializedProperty p = so.FindProperty(name);
             if (p != null) p.boolValue = false;
         }
+
+        // Unreliable deltas prevent head-of-line blocking lag; threshold prevents flooding 1mm micro-packets.
+        SerializedProperty unreli = so.FindProperty("UseUnreliableDeltas");
+        if (unreli != null) unreli.boolValue = true;
+
+        SerializedProperty thresh = so.FindProperty("PositionThreshold");
+        if (thresh != null) thresh.floatValue = 0.025f;
+
+        SerializedProperty interp = so.FindProperty("PositionMaxInterpolationTime");
+        if (interp != null) interp.floatValue = 0.15f;
+
         so.ApplyModifiedProperties();
     }
 
@@ -592,7 +615,7 @@ public static class ProjectSetupBuilder
         so.ApplyModifiedProperties();
 
         Health hp = Ensure<Health>(go);
-        hp.maxHealth = 30;
+        hp.maxHealth = 70;
         hp.creatureId = "goblin";                 // for Kill quest objectives
         hp.despawnOnDeath = true;                 // enemies leave the world
         hp.despawnDelay = 0.6f;                   // long enough for DeathEffect to play
@@ -628,9 +651,9 @@ public static class ProjectSetupBuilder
         brain.aggroRange = 6f;
         brain.attackRange = 0.9f;
         brain.giveUpRange = 10f;
-        brain.moveSpeed = 2f;
-        brain.damage = 5;
-        brain.attackCooldown = 1.2f;
+        brain.moveSpeed = 2.6f;
+        brain.damage = 15;
+        brain.attackCooldown = 0.85f;
         brain.knockback = 3.5f;
     }
 

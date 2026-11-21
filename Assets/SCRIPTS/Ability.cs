@@ -44,6 +44,18 @@ public abstract class Ability : NetworkBehaviour
     public bool CanAfford => powerCost <= 0f || (meter != null && meter.Has(powerCost));
 
 
+    public virtual bool SupportsCharging => false;
+    public virtual void OnChargeStart(Vector2 pointerWorld) { }
+    public virtual void OnChargeUpdate(Vector2 pointerWorld) { }
+    public virtual void OnChargeRelease(Vector2 pointerWorld) { }
+    public virtual void OnChargeCancel() { }
+
+    protected void CommitCooldown()
+    {
+        nextReadyTime = Time.time +
+            cooldown * (skills != null ? skills.CooldownMultiplier : 1f);
+    }
+
     /// Called by AbilityLoadout on the owning client only.
     public void TryActivate(Vector2 aimDirection)
     {
@@ -54,9 +66,8 @@ public abstract class Ability : NetworkBehaviour
 
         // Predicted locally so the cooldown UI reacts instantly; the server
         // re-checks nothing here because a stale cooldown is harmless in co-op PvE.
-        nextReadyTime = Time.time +
-            cooldown * (skills != null ? skills.CooldownMultiplier : 1f);
-
+        CommitCooldown();
+        ExecuteCosmeticEffects(aimDirection);
         ActivateServerRpc(aimDirection);
     }
 
@@ -78,7 +89,13 @@ public abstract class Ability : NetworkBehaviour
 
     /// Runs on every client. Cosmetic only - animation, sound, particles.
     [Rpc(SendTo.ClientsAndHost)]
-    void PlayEffectsRpc(Vector2 aimDirection)
+    protected void PlayEffectsRpc(Vector2 aimDirection)
+    {
+        if (IsOwner) return;
+        ExecuteCosmeticEffects(aimDirection);
+    }
+
+    void ExecuteCosmeticEffects(Vector2 aimDirection)
     {
         if (anim != null && !string.IsNullOrEmpty(animatorTrigger) && HasParameter(animatorTrigger))
             anim.SetTrigger(animatorTrigger);

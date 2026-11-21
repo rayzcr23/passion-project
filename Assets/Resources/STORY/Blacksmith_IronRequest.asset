@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e50ec0553be94c648b5fd43a6c41b2fd, type: 3}
+  m_Name: Blacksmith_IronRequest
+  m_EditorClassIdentifier: 
+  speakerName: Blacksmith
+  lines:
+  - Ah, a warrior! Your blade looks dull â€?I can reforge it into something worthy.
+  - But I need materials. Goblins carry iron ore on them â€?kill enough and they'll drop it.
+  - Bring me 20 pieces of iron ore and I'll make you a sword that'll cleave stone!
+  startsQuest: {fileID: 11400000, guid: 30ebe246773e4191b50e5d1c5e4c823d, type: 2}
+  inProgressLines:
+  - Keep slaying goblins â€?they'll drop iron eventually. I need 20 pieces!
+  completedLines:
+  - You got all 20 pieces! Talk to me again and I'll get to work immediately!

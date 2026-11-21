@@ -230,14 +230,14 @@ MonoBehaviour:
   RotationInterpolationType: 0
   ScaleInterpolationType: 0
   PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
+  PositionMaxInterpolationTime: 0.15
   RotationLerpSmoothing: 1
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
   ScaleMaxInterpolationTime: 0.1
   AuthorityMode: 0
   TickSyncChildren: 0
-  UseUnreliableDeltas: 0
+  UseUnreliableDeltas: 1
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 0
@@ -247,7 +247,7 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.001
+  PositionThreshold: 0.025
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  maxHealth: 30
+  maxHealth: 70
   isBoss: 0
   creatureId: goblin
   despawnOnDeath: 1
@@ -316,13 +316,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  aggroRange: 6
+  aggroRange: 7
   attackRange: 0.9
-  giveUpRange: 10
-  moveSpeed: 2
-  damage: 5
-  attackCooldown: 1.2
-  knockback: 3.5
+  giveUpRange: 12
+  moveSpeed: 2.6
+  damage: 15
+  attackCooldown: 0.85
+  knockback: 5
   hitstunSeconds: 0.25
 --- !u!114 &5562602294758888245
 MonoBehaviour:

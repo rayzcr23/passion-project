@@ -32,7 +32,7 @@ public class ProjectileAbility : Ability
             // Spawn first so the NetworkObject exists, then hand it its heading -
             // clients read that in OnNetworkSpawn and simulate the flight themselves.
             shot.NetworkObject.Spawn(true);
-            shot.ServerLaunch(dir, OwnerClientId);
+            shot.ServerLaunch(dir, OwnerClientId, NetworkObject);
         }
     }
 }

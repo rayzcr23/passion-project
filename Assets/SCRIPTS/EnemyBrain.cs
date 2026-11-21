@@ -12,11 +12,11 @@ public class EnemyBrain : NetworkBehaviour
     public float giveUpRange = 10f;
 
     [Header("Movement")]
-    public float moveSpeed = 2f;
+    public float moveSpeed = 2.6f;
 
     [Header("Attack")]
-    public int damage = 5;
-    public float attackCooldown = 1.2f;
+    public int damage = 15;
+    public float attackCooldown = 0.85f;
     public float knockback = 3.5f;
 
     [Header("Reaction")]
@@ -43,10 +43,17 @@ public class EnemyBrain : NetworkBehaviour
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         knockbackReceiver = GetComponent<KnockbackReceiver>();
+
+        // 20% chance to drop iron ore when killed — tracked by QuestManager.
+        if (GetComponent<IronDrop>() == null)
+            gameObject.AddComponent<IronDrop>();
     }
 
     public override void OnNetworkSpawn()
     {
+        // Remote copies are positioned by NetworkTransform; dynamic physics must not fight it.
+        if (!IsServer && rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
+
         if (IsServer && health != null)
         {
             lastKnownHealth = health.Current;

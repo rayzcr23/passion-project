@@ -30,10 +30,17 @@ public class DamageFlash : MonoBehaviour
          "character. Leave at 0 for enemies.")]
     public float cameraShakeOnDamage = 0f;
 
+    public bool IsPunching { get; private set; }
+
     Color baseColor;
     Vector3 baseScale;
     int lastHealth = -1;
     Coroutine running;
+
+    public void SetBaseScale(Vector3 scale)
+    {
+        baseScale = scale;
+    }
 
     void Awake()
     {
@@ -42,6 +49,21 @@ public class DamageFlash : MonoBehaviour
 
         if (sprite != null) baseColor = sprite.color;
         baseScale = transform.localScale;
+    }
+
+    void Start()
+    {
+        // Re-capture scale after all Awake() calls have configured boss or custom scale
+        var fish = GetComponent<GiantFishBoss>();
+        if (fish != null)
+        {
+            baseScale = Vector3.one * fish.bossScale;
+            transform.localScale = baseScale;
+        }
+        else
+        {
+            baseScale = transform.localScale;
+        }
     }
 
     void OnEnable()
@@ -85,6 +107,9 @@ public class DamageFlash : MonoBehaviour
         // a captured colour here would undo the fade a moment later.
         baseColor = sprite.color;
 
+        var fish = GetComponent<GiantFishBoss>();
+        if (fish != null) baseScale = Vector3.one * fish.bossScale;
+
         if (punchScale) StartCoroutine(PunchRoutine());
 
         for (int i = 0; i < Mathf.Max(1, flashCount); i++)
@@ -102,6 +127,7 @@ public class DamageFlash : MonoBehaviour
 
     IEnumerator PunchRoutine()
     {
+        IsPunching = true;
         float elapsed = 0f;
         while (elapsed < punchSeconds)
         {
@@ -115,6 +141,7 @@ public class DamageFlash : MonoBehaviour
             yield return null;
         }
         transform.localScale = baseScale;
+        IsPunching = false;
     }
 
     /// Writes colour while leaving whatever alpha is currently set intact.
@@ -127,6 +154,10 @@ public class DamageFlash : MonoBehaviour
     void Restore()
     {
         SetRgb(baseColor);
+        var fish = GetComponent<GiantFishBoss>();
+        if (fish != null) baseScale = Vector3.one * fish.bossScale;
         transform.localScale = baseScale;
+        IsPunching = false;
     }
 }
+

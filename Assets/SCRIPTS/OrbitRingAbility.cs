@@ -103,6 +103,10 @@ public class OrbitRingAbility : Ability
 
     void BuildBlades()
     {
+        Sprite spriteToUse = (bladeSprite == null || bladeSprite.name.Contains("Arrow"))
+            ? AuraVFXLibrary.GetHolySword()
+            : bladeSprite;
+
         for (int i = 0; i < bladeCount; i++)
         {
             var go = new GameObject("Blade");
@@ -110,8 +114,20 @@ public class OrbitRingAbility : Ability
             go.transform.localScale = Vector3.one * bladeScale;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = bladeSprite;
+            sr.sprite = spriteToUse;
+            sr.color = new Color(1f, 0.96f, 0.82f);
             if (body != null) sr.sortingOrder = body.sortingOrder + 2;
+
+            var streak = new GameObject("OrbitTrail");
+            streak.transform.SetParent(go.transform, false);
+            streak.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+            streak.transform.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            streak.transform.localScale = new Vector3(0.9f, 2.0f, 1f);
+
+            var sSr = streak.AddComponent<SpriteRenderer>();
+            sSr.sprite = AuraVFXLibrary.GetCometStreak();
+            sSr.color = new Color(1f, 0.85f, 0.35f, 0.75f);
+            if (body != null) sSr.sortingOrder = body.sortingOrder + 1;
 
             blades.Add(go.transform);
         }

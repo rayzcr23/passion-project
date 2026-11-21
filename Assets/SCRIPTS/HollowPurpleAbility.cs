@@ -108,6 +108,7 @@ public class HollowPurpleAbility : Ability
         }
 
         CameraFollow.Shake(fireShake);
+        ImpactFrameEffect.Trigger(ImpactFrameEffect.Style.HollowPurple, 0.26f, fireShake * 1.4f, true);
 
         if (impactPrefab == null) yield break;
 

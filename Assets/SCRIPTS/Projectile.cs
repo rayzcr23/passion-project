@@ -21,6 +21,7 @@ public class Projectile : NetworkBehaviour
     readonly NetworkVariable<int> sortingOrder = new NetworkVariable<int>(1);
 
     ulong shooterClientId;
+    ulong shooterNetworkObjectId;
     Rigidbody2D rb;
     SpriteRenderer sprite;
     float age;
@@ -32,9 +33,17 @@ public class Projectile : NetworkBehaviour
     }
 
     /// Server only. Call straight after NetworkObject.Spawn().
-    public void ServerLaunch(Vector2 direction, ulong shooter)
+    public void ServerLaunch(Vector2 direction, ulong shooter, NetworkObject shooterObj = null)
     {
         shooterClientId = shooter;
+        if (shooterObj != null)
+        {
+            shooterNetworkObjectId = shooterObj.NetworkObjectId;
+        }
+        else if (NetworkManager.Singleton != null && NetworkManager.Singleton.ConnectedClients.TryGetValue(shooterClientId, out var client) && client.PlayerObject != null)
+        {
+            shooterNetworkObjectId = client.PlayerObject.NetworkObjectId;
+        }
         heading.Value = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
         sortingOrder.Value = 1;
     }
@@ -66,7 +75,13 @@ public class Projectile : NetworkBehaviour
 
         // Don't let a shot hit the player who fired it as it leaves the muzzle.
         NetworkObject hitObject = other.GetComponentInParent<NetworkObject>();
-        if (hitObject != null && hitObject.OwnerClientId == shooterClientId) return;
+        if (hitObject != null)
+        {
+            if (shooterNetworkObjectId != 0 && hitObject.NetworkObjectId == shooterNetworkObjectId) return;
+            if (NetworkManager.Singleton != null &&
+                NetworkManager.Singleton.ConnectedClients.TryGetValue(shooterClientId, out var client) &&
+                client.PlayerObject != null && hitObject == client.PlayerObject) return;
+        }
 
         Health target = other.GetComponentInParent<Health>();
         if (target != null && !target.IsDead)

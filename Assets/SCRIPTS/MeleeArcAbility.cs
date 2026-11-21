@@ -28,7 +28,7 @@ public class MeleeArcAbility : Ability
 
     [Tooltip("Delay before the hit registers, so it lands when the blade is out " +
              "rather than the instant the key goes down.")]
-    public float windupSeconds = 0.15f;
+    public float windupSeconds = 0.04f;
 
     [Header("Feel")]
     public float knockback = 2f;
@@ -135,6 +135,7 @@ public class MeleeArcAbility : Ability
 
             Vector2 incoming = distance > 0.001f ? toTarget / distance : aimDirection;
             target.ServerTakeDamage(ScaleDamage(damage), OwnerClientId, incoming);
+            PlayHitImpactRpc(col.bounds.center, incoming);
 
             if (knockback > 0f)
             {
@@ -162,12 +163,44 @@ public class MeleeArcAbility : Ability
         if (hits > 0) ConnectedRpc(hits);
     }
 
+    [Rpc(SendTo.ClientsAndHost)]
+    void PlayHitImpactRpc(Vector3 pos, Vector2 dir)
+    {
+        SlashArcEffect.SpawnHitImpact(pos, dir);
+    }
+
     /// Only the attacker feels the hit. Everyone else seeing your screen shake
     /// would be noise, and the flash already tells them the target was struck.
     [Rpc(SendTo.Owner)]
     void ConnectedRpc(int targetsHit)
     {
         CameraFollow.Shake(Mathf.Min(0.22f + 0.06f * (targetsHit - 1), 0.5f));
+    }
+
+    int localComboStep = 0;
+    float lastSwingTime = -10f;
+
+    protected override void OnClientEffects(Vector2 aimDirection)
+    {
+        base.OnClientEffects(aimDirection);
+        Vector2 dir = aimDirection.sqrMagnitude > 0.0001f ? aimDirection.normalized : Vector2.right;
+        Vector3 pos = origin != null ? origin.position : transform.position;
+        var body = GetComponent<SpriteRenderer>();
+        int order = body != null ? body.sortingOrder + 10 : 35;
+        float reach = range * (skills != null ? skills.RangeMultiplier : 1f);
+
+        // 3-hit combo progression
+        if (Time.time - lastSwingTime < 0.75f)
+        {
+            localComboStep = (localComboStep + 1) % 3;
+        }
+        else
+        {
+            localComboStep = 0;
+        }
+        lastSwingTime = Time.time;
+
+        SlashArcEffect.Spawn(pos, dir, reach, order, localComboStep);
     }
 
     static void DrawCircle(Vector2 centre, float radius, Color color, float duration)
