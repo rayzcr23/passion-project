@@ -94,7 +94,7 @@ public class Health : NetworkBehaviour
 
         ServerApplyLifesteal(attackerClientId, before - current.Value);
 
-        PowerMeter.ServerAwardForDamage(attackerClientId, this, amount);
+        PowerMeter.ServerAwardForDamage(attackerClientId, this, before - current.Value);
 
         if (current.Value == 0) ServerDie();
     }

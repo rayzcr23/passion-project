@@ -584,8 +584,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   max: 100
-  gainPerDamageDealt: 1.6
-  gainPerDamageTaken: 0.8
+  gainPerDamageDealt: 0.12
+  gainPerDamageTaken: 0.05
 --- !u!114 &2809974114724371410
 MonoBehaviour:
   m_ObjectHideFlags: 0

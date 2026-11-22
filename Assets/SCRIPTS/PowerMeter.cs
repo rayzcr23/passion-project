@@ -13,14 +13,12 @@ public class PowerMeter : NetworkBehaviour
     public float max = 100f;
 
     [Header("Gain")]
-    [Tooltip("POW per point of damage dealt. At 0.35 a 30hp goblin is worth about " +
-         "10 POW, so a full meter is roughly ten kills - a Super you see a few " +
-         "times a fight rather than every other goblin.")]
-    public float gainPerDamageDealt = 0.35f;
+    [Tooltip("POW per point of damage actually dealt. A 70 HP goblin grants about 8 POW.")]
+    public float gainPerDamageDealt = 0.12f;
 
     [Tooltip("POW per point of damage taken. Losing a fight should still build " +
          "toward a comeback, but far slower than winning one.")]
-    public float gainPerDamageTaken = 0.15f;
+    public float gainPerDamageTaken = 0.05f;
 
     readonly NetworkVariable<float> power = new NetworkVariable<float>();
 

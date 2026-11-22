@@ -1,4 +1,4 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: a0cd38def3bdd314997b3193b2a191f1
 TextureImporter:
   internalIDToNameTable: []
@@ -59,9 +59,69 @@ TextureImporter:
   singleChannelComponent: 0
   flipbookRows: 4
   flipbookColumns: 4
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-  sprites:
+    sprites:
     - serializedVersion: 2
       name: Archery_0
       rect:
@@ -73,17 +133,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 0
+      spriteID: e1db4f7341aa3b14ea3b21fee65a5ed7
+      internalID: -907705702
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_1
       rect:
         serializedVersion: 2
@@ -94,17 +155,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 1000003
+      spriteID: d13092da39befed4db2c6a258d78c402
+      internalID: -72189941
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_2
       rect:
         serializedVersion: 2
@@ -115,17 +177,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 2000006
+      spriteID: 454729a39959ee74b9ac36c7afd80487
+      internalID: 2019287616
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_3
       rect:
         serializedVersion: 2
@@ -136,17 +199,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 3000009
+      spriteID: c8fd2cecb2bc1654abc3c83d81e82b40
+      internalID: -970178651
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_4
       rect:
         serializedVersion: 2
@@ -157,17 +221,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 4000012
+      spriteID: 5f3e28d25f8077244bafddaa4ac459f3
+      internalID: -909222876
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_5
       rect:
         serializedVersion: 2
@@ -178,17 +243,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 5000015
+      spriteID: 80c57fd2a3724064d9b5d8420ea0d1b4
+      internalID: -170501589
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_6
       rect:
         serializedVersion: 2
@@ -199,17 +265,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 6000018
+      spriteID: 5f5c43eab27464b41a3a88ac768c0d56
+      internalID: 1097308144
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_7
       rect:
         serializedVersion: 2
@@ -220,17 +287,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 7000021
+      spriteID: 7fdb4d0b1a027f14d8184ed97079ea65
+      internalID: 1333860836
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_8
       rect:
         serializedVersion: 2
@@ -241,17 +309,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 8000024
+      spriteID: 0da2a12ff693b3d438a2248bc13e7bf1
+      internalID: 1376217388
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_9
       rect:
         serializedVersion: 2
@@ -262,17 +331,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 9000027
+      spriteID: 92d1bd4e725b5f544b42ac604fab3c5f
+      internalID: 305385810
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_10
       rect:
         serializedVersion: 2
@@ -283,17 +353,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 10000030
+      spriteID: 81794ec6009826e4ea52920ac4222764
+      internalID: 1391050418
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_11
       rect:
         serializedVersion: 2
@@ -304,17 +375,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 11000033
+      spriteID: 39b462d7f1115b24082e28c60bf13c36
+      internalID: -1688054760
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_12
       rect:
         serializedVersion: 2
@@ -325,17 +397,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 12000036
+      spriteID: 841bbed0b8e36e0428e53180cdf872c3
+      internalID: -1783015331
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_13
       rect:
         serializedVersion: 2
@@ -346,17 +419,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 13000039
+      spriteID: 9348258746b188147bc17ecdb7dd279e
+      internalID: -2135124855
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_14
       rect:
         serializedVersion: 2
@@ -367,17 +441,18 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 14000042
+      spriteID: 701457515274ff84fbc29c5bad828a0c
+      internalID: 1709396959
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    - serializedVersion: 2
+      weights: []
+    - serializedVersion: 2
       name: Archery_15
       rect:
         serializedVersion: 2
@@ -388,46 +463,47 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
-      customData: ''
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ''
-      internalID: 15000045
+      spriteID: 0c321d4aa78577a4b98b153e0695e6fb
+      internalID: 1243996213
       vertices: []
-      indices: ''
+      indices: 
       edges: []
-      weights: []    outline: []
-    customData: ''
+      weights: []
+    outline: []
+    customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 89db4fdfc21e5d541bca08697486f955
     internalID: 0
     vertices: []
-    indices: ''
+    indices: 
     edges: []
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Archery_0: 0
-      Archery_1: 1000003
-      Archery_2: 2000006
-      Archery_3: 3000009
-      Archery_4: 4000012
-      Archery_5: 5000015
-      Archery_6: 6000018
-      Archery_7: 7000021
-      Archery_8: 8000024
-      Archery_9: 9000027
-      Archery_10: 10000030
-      Archery_11: 11000033
-      Archery_12: 12000036
-      Archery_13: 13000039
-      Archery_14: 14000042
-      Archery_15: 15000045
+      Archery_0: -907705702
+      Archery_1: -72189941
+      Archery_10: 1391050418
+      Archery_11: -1688054760
+      Archery_12: -1783015331
+      Archery_13: -2135124855
+      Archery_14: 1709396959
+      Archery_15: 1243996213
+      Archery_2: 2019287616
+      Archery_3: -970178651
+      Archery_4: -909222876
+      Archery_5: -170501589
+      Archery_6: 1097308144
+      Archery_7: 1333860836
+      Archery_8: 1376217388
+      Archery_9: 305385810
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -39,7 +39,7 @@ public static class TimeStopWorld
         }
     }
 
-    public static bool IsStopped => ActiveCaster != null;
+    public static bool IsStopped => ActiveCaster != null || HSirkBoss.IsTimeStopped;
 
     public static bool LocalUnlocked
     {
@@ -55,7 +55,7 @@ public static class TimeStopWorld
     public static bool IsFrozenPlayer(AbilityLoadout loadout)
     {
         AbilityLoadout caster = ActiveCaster;
-        return caster != null && loadout != null && loadout != caster;
+        return loadout != null && (HSirkBoss.IsTimeStopped || (caster != null && loadout != caster));
     }
 
     /// Keep world characters in their exact pose while the clock is stopped.

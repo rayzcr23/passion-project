@@ -82,14 +82,18 @@ public sealed class TimeStopVisuals : MonoBehaviour
         float t = Time.unscaledTime;
         Rect screen = new Rect(0f, 0f, width, height);
 
-        Tint(screen, new Color(0.025f, 0.065f, 0.19f, 0.31f * fade));
+        bool hostileStop = HSirkBoss.IsTimeStopped;
+        Color edgeColor = hostileStop ? new Color(1f, 0.37f, 0.13f) : new Color(0.27f, 0.88f, 1f);
+        Tint(screen, hostileStop
+            ? new Color(0.24f, 0.025f, 0.015f, 0.39f * fade)
+            : new Color(0.025f, 0.065f, 0.19f, 0.31f * fade));
 
         // A cold rim, a few restrained scan lines, and drifting still-time motes.
         float rim = Mathf.Clamp(height * 0.007f, 3f, 7f);
-        Tint(new Rect(0f, 0f, width, rim), new Color(0.27f, 0.88f, 1f, 0.57f * fade));
-        Tint(new Rect(0f, height - rim, width, rim), new Color(0.27f, 0.88f, 1f, 0.57f * fade));
-        Tint(new Rect(0f, 0f, rim, height), new Color(0.27f, 0.88f, 1f, 0.38f * fade));
-        Tint(new Rect(width - rim, 0f, rim, height), new Color(0.27f, 0.88f, 1f, 0.38f * fade));
+        Tint(new Rect(0f, 0f, width, rim), new Color(edgeColor.r, edgeColor.g, edgeColor.b, 0.57f * fade));
+        Tint(new Rect(0f, height - rim, width, rim), new Color(edgeColor.r, edgeColor.g, edgeColor.b, 0.57f * fade));
+        Tint(new Rect(0f, 0f, rim, height), new Color(edgeColor.r, edgeColor.g, edgeColor.b, 0.38f * fade));
+        Tint(new Rect(width - rim, 0f, rim, height), new Color(edgeColor.r, edgeColor.g, edgeColor.b, 0.38f * fade));
 
         for (int i = 0; i < 12; i++)
         {
@@ -126,12 +130,16 @@ public sealed class TimeStopVisuals : MonoBehaviour
         Rect badge = new Rect((width - badgeWidth) * 0.5f, 3f, badgeWidth, 50f);
         Tint(badge, new Color(0.015f, 0.045f, 0.12f, 0.83f * fade));
         Tint(new Rect(badge.x, badge.y, badge.width, 2f), new Color(0.43f, 0.9f, 1f, 0.9f * fade));
-        GUI.color = new Color(Cyan.r, Cyan.g, Cyan.b, fade);
-        GUI.Label(new Rect(badge.x, badge.y + 3f, badge.width, 25f), "TIME STOP ACTIVE", titleStyle);
+        GUI.color = hostileStop ? new Color(1f, 0.67f, 0.35f, fade) : new Color(Cyan.r, Cyan.g, Cyan.b, fade);
+        GUI.Label(new Rect(badge.x, badge.y + 3f, badge.width, 25f),
+                  hostileStop ? "H-SIRK STOPPED TIME" : "TIME STOP ACTIVE", titleStyle);
         GUI.color = new Color(0.77f, 0.88f, 1f, fade);
+        AbilityLoadout caster = TimeStopWorld.ActiveCaster;
         GUI.Label(new Rect(badge.x, badge.y + 27f, badge.width, 20f),
-                  TimeStopWorld.ActiveCaster != null && TimeStopWorld.ActiveCaster.IsOwner
-                      ? (TouchControls.TouchModeActive ? "TAP TIME TO RESUME" : "PRESS T TO RESUME")
+                  hostileStop ? "BRACE FOR THE FIREBALLS" :
+                  caster != null && caster.IsOwner
+                      ? string.Format("{0:F0}s LEFT  |  {1}", caster.TimeStopSecondsRemaining,
+                          TouchControls.TouchModeActive ? "TAP TIME TO RESUME" : "PRESS T TO RESUME")
                       : "WAIT FOR TIME TO RESUME", hintStyle);
 
         if (introTime > 0f)

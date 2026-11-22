@@ -32,11 +32,21 @@ public class AbilityLoadout : NetworkBehaviour
 
     [Header("Time Stop")]
     public KeyCode timeStopKey = KeyCode.T;
+    public const float TimeStopPowerCost = 100f;
+    public const float TimeStopDuration = 10f;
+    public const float TimeStopCooldown = 30f;
     readonly NetworkVariable<bool> hasTimeStop = new NetworkVariable<bool>();
     readonly NetworkVariable<bool> timeStopActive = new NetworkVariable<bool>();
+    readonly NetworkVariable<double> timeStopEndsAt = new NetworkVariable<double>();
+    readonly NetworkVariable<double> timeStopReadyAt = new NetworkVariable<double>();
+    PowerMeter powerMeter;
 
     public bool TimeStopUnlocked => hasTimeStop.Value;
     public bool IsTimeStopActive => timeStopActive.Value;
+    public float TimeStopSecondsRemaining => NetworkManager == null ? 0f :
+        Mathf.Max(0f, (float)(timeStopEndsAt.Value - NetworkManager.ServerTime.Time));
+    public float TimeStopCooldownRemaining => NetworkManager == null ? 0f :
+        Mathf.Max(0f, (float)(timeStopReadyAt.Value - NetworkManager.ServerTime.Time));
 
     public enum AimMode
     {
@@ -64,6 +74,7 @@ public class AbilityLoadout : NetworkBehaviour
         if (death == null) death = GetComponent<PlayerDeath>();
         if (movement == null) movement = GetComponent<Movement>();
         if (guard == null) guard = GetComponent<GuardAbility>();
+        powerMeter = GetComponent<PowerMeter>();
         if (bow == null) bow = GetComponent<BowAbility>();
         if (iceAbility == null) iceAbility = GetComponent<GlacialBurstAbility>();
         if (iceAbility == null) iceAbility = gameObject.AddComponent<GlacialBurstAbility>();
@@ -99,14 +110,15 @@ public class AbilityLoadout : NetworkBehaviour
     void OnTimeStopUnlocked(bool previous, bool current)
     {
         if (!IsOwner || !current || previous) return;
-        BannerOverlay.Show("TIME STOP AWAKENED  |  PRESS T");
+        BannerOverlay.Show("TIME STOP AWAKENED  |  100 POW  |  10 SECONDS");
         ImpactFrameEffect.TriggerCustom(new Color(0.43f, 0.83f, 1f), 0.3f, 0.45f, false);
     }
 
     void Update()
     {
-        if (IsServer && timeStopActive.Value && death != null && death.IsDead)
-            timeStopActive.Value = false;
+        if (IsServer && timeStopActive.Value &&
+            ((death != null && death.IsDead) || NetworkManager.ServerTime.Time >= timeStopEndsAt.Value))
+            EndTimeStopServer();
 
         if (!IsOwner || aim == null) return;
         if (TimeStopWorld.IsFrozenPlayer(this))
@@ -115,8 +127,7 @@ public class AbilityLoadout : NetworkBehaviour
             return;
         }
 
-        // Time Stop is a free toggle. Handle it before guard input so the
-        // caster can always release it without lowering the shield first.
+        // Handle Time Stop before guard input so the caster can release it.
         if (hasTimeStop.Value &&
             (Input.GetKeyDown(timeStopKey) || TouchControls.TimePressed) &&
             (DialogueUI.Instance == null || !DialogueUI.Instance.IsOpen))
@@ -236,6 +247,28 @@ public class AbilityLoadout : NetworkBehaviour
         RequestUnlockTimeStopRpc();
     }
 
+    public void RequestHSirkAmbush()
+    {
+        if (!IsOwner || !IsSpawned) return;
+        RequestHSirkAmbushRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    void RequestHSirkAmbushRpc()
+    {
+        HSirkEncounter hsirk = FindFirstObjectByType<HSirkEncounter>();
+        if (hsirk == null || Vector2.Distance(transform.position, hsirk.transform.position) >
+            hsirk.TalkRange + 1.5f) return;
+        if (hsirk.ServerSummonGuards()) HSirkAmbushFxRpc();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    void HSirkAmbushFxRpc()
+    {
+        BannerOverlay.Show("H-SIRK'S GUARDS ATTACK!");
+        CameraFollow.Shake(0.4f);
+    }
+
     [Rpc(SendTo.Server)]
     void RequestUnlockTimeStopRpc()
     {
@@ -257,10 +290,26 @@ public class AbilityLoadout : NetworkBehaviour
     void RequestSetTimeStopRpc(bool active)
     {
         if (!hasTimeStop.Value) return;
-        if (active && death != null && death.IsDead) return;
-        if (active && TimeStopWorld.IsStopped && TimeStopWorld.ActiveCaster != this)
+        if (!active)
+        {
+            if (timeStopActive.Value) EndTimeStopServer();
             return;
-        timeStopActive.Value = active;
+        }
+
+        if (timeStopActive.Value || (death != null && death.IsDead) ||
+            NetworkManager.ServerTime.Time < timeStopReadyAt.Value || TimeStopWorld.IsStopped)
+            return;
+        if (powerMeter == null || !powerMeter.ServerTrySpend(TimeStopPowerCost)) return;
+
+        timeStopEndsAt.Value = NetworkManager.ServerTime.Time + TimeStopDuration;
+        timeStopActive.Value = true;
+    }
+
+    void EndTimeStopServer()
+    {
+        timeStopActive.Value = false;
+        timeStopEndsAt.Value = 0d;
+        timeStopReadyAt.Value = NetworkManager.ServerTime.Time + TimeStopCooldown;
     }
 
     void HandleSpecial(Vector2 fallbackDir)
@@ -349,10 +398,17 @@ public class AbilityLoadout : NetworkBehaviour
         }
         if (hasTimeStop.Value)
         {
-            bool canToggle = !TimeStopWorld.IsFrozenPlayer(this);
-            GUI.color = timeStopActive.Value ? new Color(0.4f, 0.95f, 1f) : new Color(0.7f, 0.5f, 1f);
+            bool canToggle = !TimeStopWorld.IsFrozenPlayer(this) &&
+                (timeStopActive.Value || (TimeStopCooldownRemaining <= 0f &&
+                 powerMeter != null && powerMeter.Has(TimeStopPowerCost)));
+            GUI.color = canToggle ? new Color(0.4f, 0.95f, 1f) : Color.gray;
             GUI.enabled = canToggle;
-            if (GUILayout.Button(timeStopActive.Value ? "[T] Resume" : "[T] Time Stop"))
+            string timeLabel = timeStopActive.Value
+                ? string.Format("[T] Resume {0:F0}s", TimeStopSecondsRemaining)
+                : TimeStopCooldownRemaining > 0f
+                    ? string.Format("[T] {0:F0}s", TimeStopCooldownRemaining)
+                    : "[T] Time (100P)";
+            if (GUILayout.Button(timeLabel))
                 RequestTimeStopToggle();
             GUI.enabled = true;
         }

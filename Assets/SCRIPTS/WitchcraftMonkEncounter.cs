@@ -79,8 +79,8 @@ public class WitchcraftMonkEncounter : MonoBehaviour
         monkDialogue.completedLines = new[]
         {
             "You defeated the skeleton guardian. Witchcraft Village is in your debt.",
-            "I grant you Time Stop. Press T to freeze the world, and press T again whenever you wish to release it.",
-            "There is no time limit. On touch screens, use the TIME button."
+            "I grant you Time Stop. It costs 100 POW and lasts up to 10 seconds.",
+            "After time resumes, wait 30 seconds before using it again. Press T, or use the TIME button on touch screens."
         };
 
         DialogueNPC npc = GetComponent<DialogueNPC>();
