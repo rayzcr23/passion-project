@@ -67,6 +67,7 @@ public class MountState : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
+        if (TimeStopWorld.IsFrozenPlayer(GetComponent<AbilityLoadout>())) return;
 
         // Dying throws you off, and leaves the sheep where you fell.
         if (death != null && death.IsDead)

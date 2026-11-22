@@ -94,6 +94,7 @@ public class SkeletonBoss : NetworkBehaviour
     void Update()
     {
         if (sprite == null) return;
+        if (TimeStopWorld.IsStopped) return;
 
         sprite.flipX = faceLeft.Value;
         State current = (State)state.Value;
@@ -121,6 +122,11 @@ public class SkeletonBoss : NetworkBehaviour
     void FixedUpdate()
     {
         if (!IsServer || health == null || health.IsDead) return;
+        if (TimeStopWorld.IsStopped)
+        {
+            body.linearVelocity = Vector2.zero;
+            return;
+        }
         if (attackRunning)
         {
             body.linearVelocity = Vector2.zero;
@@ -172,12 +178,12 @@ public class SkeletonBoss : NetworkBehaviour
             if (health.IsDead) yield break;
             Vector2 center = transform.position;
             StompWarningRpc(center, stompRadius, stompWindup);
-            yield return new WaitForSeconds(stompWindup);
+            yield return WaitForUnfrozenSeconds(stompWindup);
             if (health.IsDead) yield break;
 
             ServerDamageStomp(center);
             StompImpactRpc(center, stompRadius);
-            if (i < 2) yield return new WaitForSeconds(timeBetweenStomps);
+            if (i < 2) yield return WaitForUnfrozenSeconds(timeBetweenStomps);
         }
 
         orbAttackNext = true;
@@ -192,12 +198,12 @@ public class SkeletonBoss : NetworkBehaviour
 
         Vector2 center = transform.position;
         StompWarningRpc(center, stompRadius, stompWindup);
-        yield return new WaitForSeconds(stompWindup);
+        yield return WaitForUnfrozenSeconds(stompWindup);
         if (health.IsDead) yield break;
 
         ServerDamageStomp(center);
         StompImpactRpc(center, stompRadius);
-        yield return new WaitForSeconds(0.18f);
+        yield return WaitForUnfrozenSeconds(0.18f);
         if (health.IsDead) yield break;
 
         ServerLaunchOrb(target);
@@ -210,6 +216,15 @@ public class SkeletonBoss : NetworkBehaviour
         attackRunning = false;
         nextAttackTime = Time.time + attackCooldown;
         if (!health.IsDead) state.Value = (int)State.Idle;
+    }
+
+    static IEnumerator WaitForUnfrozenSeconds(float duration)
+    {
+        while (duration > 0f || TimeStopWorld.IsStopped)
+        {
+            if (!TimeStopWorld.IsStopped) duration -= Time.deltaTime;
+            yield return null;
+        }
     }
 
     void ServerDamageStomp(Vector2 center)
@@ -305,6 +320,7 @@ public class SkeletonBoss : NetworkBehaviour
     {
         stompAnimationTime = 0f;
         var circle = SummoningCircleEffect.Spawn(center, radius, windup, 27);
+        circle.stopWithWorld = true;
         circle.primaryColor = new Color(0.7f, 0.25f, 1f);
         circle.secondaryColor = new Color(1f, 0.45f, 0.18f);
     }

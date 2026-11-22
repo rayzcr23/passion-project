@@ -11,6 +11,7 @@ public class SummoningCircleEffect : MonoBehaviour
     public Color primaryColor = new Color(1f, 0.88f, 0.35f);
     public Color secondaryColor = new Color(1f, 0.65f, 0.15f);
     public int sortingOrder = 5;
+    public bool stopWithWorld;
 
     GameObject outerRing;
     GameObject innerRing;
@@ -84,6 +85,11 @@ public class SummoningCircleEffect : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (stopWithWorld && TimeStopWorld.IsStopped)
+            {
+                yield return null;
+                continue;
+            }
             elapsed += Time.deltaTime;
             float life = elapsed / duration;
 
@@ -130,6 +136,7 @@ public class SummoningCircleEffect : MonoBehaviour
 
         while (timer < duration - 0.4f)
         {
+            while (stopWithWorld && TimeStopWorld.IsStopped) yield return null;
             timer += interval;
 
             Vector2 offset = Random.insideUnitCircle * (radius * 0.9f);
@@ -165,6 +172,12 @@ public class SummoningCircleEffect : MonoBehaviour
         while (elapsed < life)
         {
             if (mote == null) yield break;
+
+            if (stopWithWorld && TimeStopWorld.IsStopped)
+            {
+                yield return null;
+                continue;
+            }
 
             elapsed += Time.deltaTime;
             float t = elapsed / life;

@@ -103,6 +103,12 @@ public class ArcherGoblinBrain : NetworkBehaviour
     {
         if ((NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !IsServer)
             || health.IsDead) return;
+        if (TimeStopWorld.IsStopped)
+        {
+            rb.linearVelocity = Vector2.zero;
+            SetSpeed(0f);
+            return;
+        }
 
         // Hitstun / knockback recovery
         if (Time.time < hitstunUntil || (knockbackReceiver != null && knockbackReceiver.IsRecovering))

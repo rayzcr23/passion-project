@@ -167,6 +167,8 @@ public class GiantFishBoss : NetworkBehaviour
             return;
         }
 
+        if (TimeStopWorld.IsStopped) return;
+
         // FISH BOSS.png naturally faces LEFT.
         // Therefore: moving right -> flipX = true (faces right). moving left -> flipX = false (faces left).
         if (sr != null)
@@ -422,7 +424,14 @@ public class GiantFishBoss : NetworkBehaviour
 
     IEnumerator WaterBlastRoutine(Vector2 landPos)
     {
-        yield return new WaitForSeconds(0.25f);
+        float remaining = 0.25f;
+        while (remaining > 0f)
+        {
+            if (!TimeStopWorld.IsStopped) remaining -= Time.deltaTime;
+            yield return null;
+        }
+
+        while (TimeStopWorld.IsStopped) yield return null;
 
         PlaySpitSFXRpc(landPos);
 

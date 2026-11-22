@@ -42,7 +42,12 @@ public class GlacialBurstAbility : Ability
         Vector2 origin = transform.position;
 
         // Matches the visual summon delay where the ice spikes materialise in a ring
-        if (summonDuration > 0f) yield return new WaitForSeconds(summonDuration);
+        float summonRemaining = summonDuration;
+        while (summonRemaining > 0f)
+        {
+            if (!TimeStopWorld.IsStopped) summonRemaining -= Time.deltaTime;
+            yield return null;
+        }
 
         if (!IsServer || NetworkObject == null || !NetworkObject.IsSpawned) yield break;
 
@@ -56,6 +61,11 @@ public class GlacialBurstAbility : Ability
 
         while (elapsed < flyTime)
         {
+            if (TimeStopWorld.IsStopped)
+            {
+                yield return null;
+                continue;
+            }
             elapsed += Time.deltaTime;
             float currentDist = Mathf.Min(maxRange, elapsed * spikeSpeed);
             prevDist = currentDist;

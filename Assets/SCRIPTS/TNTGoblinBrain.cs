@@ -109,6 +109,7 @@ public class TNTGoblinBrain : NetworkBehaviour
 
     void Update()
     {
+        if (TimeStopWorld.IsStopped) return;
         // Replicated facing
         if (sprite != null && NetworkObject != null && NetworkObject.IsSpawned) sprite.flipX = faceLeft.Value;
 
@@ -123,6 +124,11 @@ public class TNTGoblinBrain : NetworkBehaviour
     void FixedUpdate()
     {
         if ((NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !IsServer) || health.IsDead || hasSelfDestructed) return;
+        if (TimeStopWorld.IsStopped)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
         // Reeling from hitstun
         if (Time.time < hitstunUntil || (knockbackReceiver != null && knockbackReceiver.IsRecovering))

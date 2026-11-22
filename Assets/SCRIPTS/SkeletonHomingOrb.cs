@@ -40,6 +40,7 @@ public class SkeletonHomingOrb : NetworkBehaviour
 
     void Update()
     {
+        if (TimeStopWorld.IsStopped) return;
         visualTime += Time.deltaTime;
         float pulse = 0.85f + 0.12f * Mathf.Sin(visualTime * 13f);
         transform.localScale = Vector3.one * pulse;
@@ -52,6 +53,7 @@ public class SkeletonHomingOrb : NetworkBehaviour
     void FixedUpdate()
     {
         if (!IsServer || resolved) return;
+        if (TimeStopWorld.IsStopped) return;
 
         age += Time.fixedDeltaTime;
         if (age >= lifetime)

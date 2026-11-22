@@ -30,6 +30,8 @@ public class Movement : NetworkBehaviour
     // flipX is not covered by NetworkTransform or NetworkAnimator, so without this
     // every remote player permanently faces right.
     readonly NetworkVariable<bool> facingLeft = new NetworkVariable<bool>();
+    bool pausedByTimeStop;
+    float animatorSpeedBeforeStop = 1f;
 
     void Awake()
     {
@@ -54,9 +56,38 @@ public class Movement : NetworkBehaviour
         if (!IsOwner && rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
     }
 
+    void Update()
+    {
+        bool frozen = TimeStopWorld.IsFrozenPlayer(loadout);
+        if (frozen == pausedByTimeStop || anim == null) return;
+
+        if (frozen)
+        {
+            animatorSpeedBeforeStop = anim.speed;
+            anim.speed = 0f;
+        }
+        else
+        {
+            anim.speed = animatorSpeedBeforeStop;
+        }
+        pausedByTimeStop = frozen;
+    }
+
+    void OnDisable()
+    {
+        if (pausedByTimeStop && anim != null) anim.speed = animatorSpeedBeforeStop;
+        pausedByTimeStop = false;
+    }
+
     void FixedUpdate()
     {
         if (!IsOwner) return;
+
+        if (TimeStopWorld.IsFrozenPlayer(loadout))
+        {
+            if (rb != null) rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
         if (death != null && death.IsDead)
         {

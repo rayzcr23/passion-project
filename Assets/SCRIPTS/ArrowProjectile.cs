@@ -17,6 +17,7 @@ public class ArrowProjectile : NetworkBehaviour
     public bool friendlyFire = false;
 
     readonly NetworkVariable<Vector2> heading = new NetworkVariable<Vector2>(Vector2.right);
+    bool IsFrozenShot => TimeStopWorld.IsStopped;
 
     ulong shooterClientId;
     ulong shooterNetworkObjectId;
@@ -84,6 +85,7 @@ public class ArrowProjectile : NetworkBehaviour
         {
             yield return new WaitForSeconds(0.025f);
             if (hasHit) yield break;
+            if (IsFrozenShot) continue;
 
             // Spawn drifting mana motes
             GameObject mote = new GameObject("ArrowMote");
@@ -197,13 +199,14 @@ public class ArrowProjectile : NetworkBehaviour
         transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
         if (rb != null)
         {
-            rb.linearVelocity = dir * speed;
+            rb.linearVelocity = IsFrozenShot ? Vector2.zero : dir * speed;
         }
     }
 
     void Update()
     {
         if (!IsServer) return;
+        if (IsFrozenShot) return;
 
         age += Time.deltaTime;
         if (age >= lifetime && !hasHit)
@@ -215,6 +218,11 @@ public class ArrowProjectile : NetworkBehaviour
 
     void FixedUpdate()
     {
+        if (IsFrozenShot)
+        {
+            if (rb != null) rb.linearVelocity = Vector2.zero;
+            return;
+        }
         Vector2 dir = heading.Value;
         if (dir.sqrMagnitude < 0.001f) dir = Vector2.right;
 
@@ -274,7 +282,7 @@ public class ArrowProjectile : NetworkBehaviour
 
     void CheckHit(Collider2D other)
     {
-        if (!IsServer || hasHit || other == null) return;
+        if (!IsServer || hasHit || other == null || IsFrozenShot) return;
 
         // Skip ignored layers
         if ((hitLayers.value & (1 << other.gameObject.layer)) == 0) return;
@@ -393,6 +401,7 @@ public class ArrowMoteFader : MonoBehaviour
 
     void Update()
     {
+        if (TimeStopWorld.IsStopped) return;
         elapsed += Time.deltaTime;
         float t = elapsed / life;
         transform.localScale = Vector3.one * (maxScale * (1f - t));
@@ -419,6 +428,7 @@ public class ArrowRingFader : MonoBehaviour
 
     void Update()
     {
+        if (TimeStopWorld.IsStopped) return;
         elapsed += Time.deltaTime;
         float t = elapsed / life;
         float s = Mathf.Lerp(startScale, endScale, Mathf.Pow(t, 0.55f));
@@ -444,6 +454,7 @@ public class ArrowSparkMote : MonoBehaviour
 
     void Update()
     {
+        if (TimeStopWorld.IsStopped) return;
         elapsed += Time.deltaTime;
         transform.position += (Vector3)(vel * Time.deltaTime);
         float t = elapsed / life;

@@ -90,6 +90,11 @@ public class DialogueNPC : MonoBehaviour
     void Update()
     {
         Transform player = LocalPlayer();
+        if (player != null && TimeStopWorld.IsFrozenPlayer(player.GetComponent<AbilityLoadout>()))
+        {
+            playerInRange = false;
+            return;
+        }
         playerInRange = player != null &&
             (player.position - transform.position).sqrMagnitude <= range * range;
 

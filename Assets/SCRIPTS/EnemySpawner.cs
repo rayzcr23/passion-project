@@ -31,7 +31,7 @@ public class EnemySpawner : NetworkBehaviour
 
     void Update()
     {
-        if (!IsServer || enemyPrefab == null) return;
+        if (!IsServer || enemyPrefab == null || TimeStopWorld.IsStopped) return;
 
         alive.RemoveAll(o => o == null || !o.IsSpawned);
 

@@ -78,7 +78,9 @@ public class WitchcraftMonkEncounter : MonoBehaviour
         };
         monkDialogue.completedLines = new[]
         {
-            "You defeated the skeleton guardian. Witchcraft Village is in your debt."
+            "You defeated the skeleton guardian. Witchcraft Village is in your debt.",
+            "I grant you Time Stop. Press T to freeze the world, and press T again whenever you wish to release it.",
+            "There is no time limit. On touch screens, use the TIME button."
         };
 
         DialogueNPC npc = GetComponent<DialogueNPC>();
@@ -88,6 +90,30 @@ public class WitchcraftMonkEncounter : MonoBehaviour
         npc.promptOffset = new Vector3(0f, 1.25f, 0f);
         npc.conversations = null;
         npc.dialogue = monkDialogue;
+    }
+
+    void OnEnable()
+    {
+        DialogueNPC.ConversationFinishedByNpc += OnConversationFinished;
+    }
+
+    void OnDisable()
+    {
+        DialogueNPC.ConversationFinishedByNpc -= OnConversationFinished;
+    }
+
+    void OnConversationFinished(DialogueNPC speaker, DialogueData finished)
+    {
+        if (speaker == null || speaker.gameObject != gameObject || finished != monkDialogue)
+            return;
+        QuestManager manager = QuestManager.Instance;
+        if (manager == null || !manager.IsComplete(QuestId)) return;
+
+        NetworkManager network = NetworkManager.Singleton;
+        if (network == null || !network.IsClient || network.SpawnManager == null) return;
+        NetworkObject player = network.SpawnManager.GetLocalPlayerObject();
+        AbilityLoadout loadout = player != null ? player.GetComponent<AbilityLoadout>() : null;
+        if (loadout != null) loadout.RequestUnlockTimeStop();
     }
 
     void Update()

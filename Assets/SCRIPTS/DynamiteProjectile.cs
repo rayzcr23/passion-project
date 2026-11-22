@@ -40,6 +40,7 @@ public class DynamiteProjectile : NetworkBehaviour
 
     void Update()
     {
+        if (TimeStopWorld.IsStopped) return;
         if (flightTimer < flightDuration)
         {
             flightTimer += Time.deltaTime;

@@ -30,6 +30,14 @@ public class AbilityLoadout : NetworkBehaviour
     public bool hasIceAbility = true;
     public KeyCode iceAbilityKey = KeyCode.G;
 
+    [Header("Time Stop")]
+    public KeyCode timeStopKey = KeyCode.T;
+    readonly NetworkVariable<bool> hasTimeStop = new NetworkVariable<bool>();
+    readonly NetworkVariable<bool> timeStopActive = new NetworkVariable<bool>();
+
+    public bool TimeStopUnlocked => hasTimeStop.Value;
+    public bool IsTimeStopActive => timeStopActive.Value;
+
     public enum AimMode
     {
         Facing,     // the way the sprite faces: left or right only
@@ -67,9 +75,53 @@ public class AbilityLoadout : NetworkBehaviour
     bool isSpecialCharging;
     public bool IsSpecialCharging => isSpecialCharging;
 
+    public override void OnNetworkSpawn()
+    {
+        hasTimeStop.OnValueChanged += OnTimeStopUnlocked;
+        timeStopActive.OnValueChanged += OnTimeStopActiveChanged;
+        TimeStopWorld.Register(this);
+        TimeStopVisuals.OnStateChanged(TimeStopWorld.IsStopped);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        hasTimeStop.OnValueChanged -= OnTimeStopUnlocked;
+        timeStopActive.OnValueChanged -= OnTimeStopActiveChanged;
+        TimeStopWorld.Unregister(this);
+        TimeStopVisuals.OnStateChanged(TimeStopWorld.IsStopped);
+    }
+
+    void OnTimeStopActiveChanged(bool previous, bool current)
+    {
+        TimeStopVisuals.OnStateChanged(TimeStopWorld.IsStopped);
+    }
+
+    void OnTimeStopUnlocked(bool previous, bool current)
+    {
+        if (!IsOwner || !current || previous) return;
+        BannerOverlay.Show("TIME STOP AWAKENED  |  PRESS T");
+        ImpactFrameEffect.TriggerCustom(new Color(0.43f, 0.83f, 1f), 0.3f, 0.45f, false);
+    }
+
     void Update()
     {
+        if (IsServer && timeStopActive.Value && death != null && death.IsDead)
+            timeStopActive.Value = false;
+
         if (!IsOwner || aim == null) return;
+        if (TimeStopWorld.IsFrozenPlayer(this))
+        {
+            CancelCharge();
+            return;
+        }
+
+        // Time Stop is a free toggle. Handle it before guard input so the
+        // caster can always release it without lowering the shield first.
+        if (hasTimeStop.Value &&
+            (Input.GetKeyDown(timeStopKey) || TouchControls.TimePressed) &&
+            (DialogueUI.Instance == null || !DialogueUI.Instance.IsOpen))
+            RequestTimeStopToggle();
+
         if (death != null && death.IsDead)
         {
             CancelCharge();
@@ -178,6 +230,39 @@ public class AbilityLoadout : NetworkBehaviour
         hasIceAbility = true;
     }
 
+    public void RequestUnlockTimeStop()
+    {
+        if (!IsOwner || !IsSpawned) return;
+        RequestUnlockTimeStopRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    void RequestUnlockTimeStopRpc()
+    {
+        QuestManager manager = QuestManager.Instance;
+        WitchcraftMonkEncounter monk = FindFirstObjectByType<WitchcraftMonkEncounter>();
+        if (manager == null || !manager.IsComplete("quest_skeleton_boss") || monk == null)
+            return;
+        if (Vector2.Distance(transform.position, monk.transform.position) > 4f) return;
+        hasTimeStop.Value = true;
+    }
+
+    void RequestTimeStopToggle()
+    {
+        if (!IsOwner || !IsSpawned || !hasTimeStop.Value) return;
+        RequestSetTimeStopRpc(!timeStopActive.Value);
+    }
+
+    [Rpc(SendTo.Server)]
+    void RequestSetTimeStopRpc(bool active)
+    {
+        if (!hasTimeStop.Value) return;
+        if (active && death != null && death.IsDead) return;
+        if (active && TimeStopWorld.IsStopped && TimeStopWorld.ActiveCaster != this)
+            return;
+        timeStopActive.Value = active;
+    }
+
     void HandleSpecial(Vector2 fallbackDir)
     {
         if (special == null) return;
@@ -232,9 +317,10 @@ public class AbilityLoadout : NetworkBehaviour
 
     void OnGUI()
     {
-        if (!IsOwner || (!hasBow && !hasIceAbility)) return;
+        if (!IsOwner || TimeStopWorld.IsFrozenPlayer(this) ||
+            (!hasBow && !hasIceAbility && !hasTimeStop.Value)) return;
 
-        float width = (hasBow && hasIceAbility) ? 295f : 205f;
+        float width = hasTimeStop.Value ? 400f : (hasBow && hasIceAbility) ? 295f : 205f;
         GUILayout.BeginArea(new Rect(Screen.width - width - 10, Screen.height - 75, width, 65));
         GUILayout.BeginHorizontal("box");
         GUI.color = !isBowEquipped ? Color.cyan : Color.gray;
@@ -260,6 +346,15 @@ public class AbilityLoadout : NetworkBehaviour
             {
                 iceAbility.TryActivate(LastAttackDirection);
             }
+        }
+        if (hasTimeStop.Value)
+        {
+            bool canToggle = !TimeStopWorld.IsFrozenPlayer(this);
+            GUI.color = timeStopActive.Value ? new Color(0.4f, 0.95f, 1f) : new Color(0.7f, 0.5f, 1f);
+            GUI.enabled = canToggle;
+            if (GUILayout.Button(timeStopActive.Value ? "[T] Resume" : "[T] Time Stop"))
+                RequestTimeStopToggle();
+            GUI.enabled = true;
         }
         GUI.color = Color.white;
         GUILayout.EndHorizontal();

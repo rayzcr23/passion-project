@@ -29,8 +29,8 @@ public class TouchControls : MonoBehaviour
     bool stickActive;
 
     // Button states for this frame.
-    bool attack, special, super, guard, ride, ice, interact;
-    bool specialConsumed, superConsumed, rideConsumed, iceConsumed, interactConsumed;
+    bool attack, special, super, guard, ride, ice, interact, timeStop;
+    bool specialConsumed, superConsumed, rideConsumed, iceConsumed, interactConsumed, timeStopConsumed;
 
     public static bool Visible =>
         Instance != null && (Instance.alwaysShow || Input.touchSupported);
@@ -71,10 +71,11 @@ public class TouchControls : MonoBehaviour
     public static bool RidePressed => Visible && Instance != null && Instance.TakeRide();
     public static bool IcePressed => Visible && Instance != null && Instance.TakeIce();
     public static bool InteractPressed => Visible && Instance != null && Instance.TakeInteract();
+    public static bool TimePressed => Visible && Instance != null && Instance.TakeTimeStop();
 
     /// True if player is currently pressing or holding any virtual control (joystick or action buttons).
     public static bool IsAnyControlActive =>
-        Visible && Instance != null && (Instance.stickActive || Instance.attack || Instance.special || Instance.super || Instance.guard || Instance.ride || Instance.ice || Instance.interact);
+        Visible && Instance != null && (Instance.stickActive || Instance.attack || Instance.special || Instance.super || Instance.guard || Instance.ride || Instance.ice || Instance.interact || Instance.timeStop);
 
     /// Checks if a touch screen coordinate is over or near any virtual touch control.
     public static bool IsTouchOverControls(Vector2 touchPos)
@@ -107,6 +108,7 @@ public class TouchControls : MonoBehaviour
     bool TakeRide() { if (!ride || rideConsumed) return false; rideConsumed = true; return true; }
     bool TakeIce() { if (!ice || iceConsumed) return false; iceConsumed = true; return true; }
     bool TakeInteract() { if (!interact || interactConsumed) return false; interactConsumed = true; return true; }
+    bool TakeTimeStop() { if (!timeStop || timeStopConsumed) return false; timeStopConsumed = true; return true; }
 
     void Awake() { Instance = this; }
     void OnDestroy() { if (Instance == this) Instance = null; }
@@ -158,9 +160,9 @@ public class TouchControls : MonoBehaviour
 
     void ReadButtons()
     {
-        bool wasSpecial = special, wasSuper = super, wasRide = ride, wasIce = ice, wasInteract = interact;
+        bool wasSpecial = special, wasSuper = super, wasRide = ride, wasIce = ice, wasInteract = interact, wasTimeStop = timeStop;
 
-        attack = special = super = guard = ride = ice = interact = false;
+        attack = special = super = guard = ride = ice = interact = timeStop = false;
 
         Rect[] rects = ButtonRects();
 
@@ -180,6 +182,7 @@ public class TouchControls : MonoBehaviour
             if (rects[4].Contains(point)) ride = true;
             if (rects.Length > 5 && rects[5].Contains(point)) ice = true;
             if (rects.Length > 6 && rects[6].Contains(point)) interact = true;
+            if (rects.Length > 7 && rects[7].Contains(point)) timeStop = true;
         }
 
         // Reset the one-shot latches when the finger lifts.
@@ -188,12 +191,14 @@ public class TouchControls : MonoBehaviour
         if (!ride && wasRide) rideConsumed = false;
         if (!ice && wasIce) iceConsumed = false;
         if (!interact && wasInteract) interactConsumed = false;
+        if (!timeStop && wasTimeStop) timeStopConsumed = false;
 
         if (!special) specialConsumed = false;
         if (!super) superConsumed = false;
         if (!ride) rideConsumed = false;
         if (!ice) iceConsumed = false;
         if (!interact) interactConsumed = false;
+        if (!timeStop) timeStopConsumed = false;
     }
 
     Rect[] ButtonRects()
@@ -205,7 +210,7 @@ public class TouchControls : MonoBehaviour
         float right = Screen.width - s - edge;
         float bottom = Screen.height - s - edge;
 
-        return new[]
+        var rects = new[]
         {
             new Rect(right, bottom - s - g, s, s),                  // attack
             new Rect(right - s - g, bottom - s * 0.4f, s, s),       // special (Q)
@@ -215,6 +220,12 @@ public class TouchControls : MonoBehaviour
             new Rect(right - (s + g) * 2f, bottom - (s + g) * 2f, s, s),// ice (G)
             new Rect(right - (s + g) * 3f, bottom - (s + g) * 1.2f, s * 1.15f, s) // talk
         };
+
+        if (!TimeStopWorld.LocalUnlocked) return rects;
+        var unlocked = new Rect[rects.Length + 1];
+        System.Array.Copy(rects, unlocked, rects.Length);
+        unlocked[7] = new Rect(right - (s + g) * 3f, bottom - (s + g) * 2.45f, s * 1.15f, s);
+        return unlocked;
     }
 
     static Texture2D pixel;
@@ -246,8 +257,8 @@ public class TouchControls : MonoBehaviour
         }
 
         Rect[] rects = ButtonRects();
-        string[] names = { "ATK", "Q", "E", "DEF", "RIDE", "G", "TALK" };
-        bool[] held = { attack, special, super, guard, ride, ice, interact };
+        string[] names = { "ATK", "Q", "E", "DEF", "RIDE", "G", "TALK", "TIME" };
+        bool[] held = { attack, special, super, guard, ride, ice, interact, timeStop };
 
         for (int i = 0; i < rects.Length; i++)
         {

@@ -53,7 +53,7 @@ public class GlacialBurstEffect : MonoBehaviour
     void Start()
     {
         // 1. SUB-ZERO ANIME IMPACT FRAME
-        ImpactFrameEffect.TriggerCustom(new Color(0.35f, 0.88f, 1f), 0.22f, 0.75f, true);
+        ImpactFrameEffect.TriggerCustom(new Color(0.35f, 0.88f, 1f), 0.22f, 0.75f, !TimeStopWorld.IsStopped);
 
         // 2. DUAL GROUND FROST MANDALA ARRAY
         StartCoroutine(DualSnowflakeRoutine());
@@ -61,7 +61,18 @@ public class GlacialBurstEffect : MonoBehaviour
         // 3. RING OF ICE SPIKES FORMATION & LAUNCH
         StartCoroutine(SpikesRingRoutine());
 
-        Destroy(gameObject, 2.8f);
+        StartCoroutine(LifetimeRoutine());
+    }
+
+    IEnumerator LifetimeRoutine()
+    {
+        float remaining = 2.8f;
+        while (remaining > 0f)
+        {
+            if (!TimeStopWorld.IsStopped) remaining -= Time.deltaTime;
+            yield return null;
+        }
+        Destroy(gameObject);
     }
 
     /// Dual counter-rotating sacred snowflake mandalas on the ground
@@ -105,6 +116,7 @@ public class GlacialBurstEffect : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -180,6 +192,7 @@ public class GlacialBurstEffect : MonoBehaviour
         float summonElapsed = 0f;
         while (summonElapsed < summonDuration)
         {
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             summonElapsed += Time.deltaTime;
             float k = Mathf.Clamp01(summonElapsed / summonDuration);
             float currentDist = Mathf.Lerp(0.4f, ringRadius, Mathf.Pow(k, 0.7f));
@@ -250,6 +263,7 @@ public class GlacialBurstEffect : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -290,6 +304,7 @@ public class GlacialBurstEffect : MonoBehaviour
         while (travelled < maxRange)
         {
             if (spike == null) yield break;
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
 
             float step = flySpeed * Time.deltaTime;
             spike.position += (Vector3)(dir * step);
@@ -350,6 +365,7 @@ public class GlacialBurstEffect : MonoBehaviour
         while (elapsed < life)
         {
             if (mote == null) yield break;
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             elapsed += Time.deltaTime;
             float t = elapsed / life;
             sr.color = new Color(startCol.r, startCol.g, startCol.b, 1f - t);
@@ -411,6 +427,7 @@ public class GlacialBurstEffect : MonoBehaviour
         while (elapsed < duration)
         {
             if (patch == null) yield break;
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
@@ -438,6 +455,7 @@ public class GlacialBurstEffect : MonoBehaviour
         while (elapsed < duration)
         {
             if (burst == null) yield break;
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             float size = Mathf.Lerp(0.3f, 1.8f, t);
@@ -465,6 +483,7 @@ public class GlacialBurstEffect : MonoBehaviour
         while (elapsed < life)
         {
             if (shard == null) yield break;
+            if (TimeStopWorld.IsStopped) { yield return null; continue; }
             elapsed += Time.deltaTime;
             vel.y -= gravity * Time.deltaTime;
             shard.transform.position += (Vector3)(vel * Time.deltaTime);

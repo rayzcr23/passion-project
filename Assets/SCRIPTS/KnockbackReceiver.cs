@@ -52,6 +52,7 @@ public class KnockbackReceiver : NetworkBehaviour
     void Apply(Vector2 impulse)
     {
         if (rb == null || rb.bodyType != RigidbodyType2D.Dynamic) return;
+        if (TimeStopWorld.IsStopped && GetComponent<AbilityLoadout>() != TimeStopWorld.ActiveCaster) return;
 
         recoverUntil = Time.time + recoverSeconds;
 

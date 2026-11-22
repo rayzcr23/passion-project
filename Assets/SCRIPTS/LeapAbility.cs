@@ -203,7 +203,13 @@ public class LeapAbility : Ability
         LeapOwnerRpc(targetPos, charge);
 
         // Wait out the travel arc
-        yield return new WaitForSeconds(airSeconds);
+        AbilityLoadout traveler = GetComponent<AbilityLoadout>();
+        float travelRemaining = airSeconds;
+        while (travelRemaining > 0f)
+        {
+            if (!TimeStopWorld.IsFrozenPlayer(traveler)) travelRemaining -= Time.deltaTime;
+            yield return null;
+        }
 
         if (!IsServer || NetworkObject == null || !NetworkObject.IsSpawned) yield break;
 
@@ -256,6 +262,7 @@ public class LeapAbility : Ability
 
     IEnumerator TravelRoutine(Vector2 targetPos, float charge)
     {
+        AbilityLoadout traveler = GetComponent<AbilityLoadout>();
         Vector3 start = transform.position;
         Vector3 end = new Vector3(targetPos.x, targetPos.y, start.z);
 
@@ -276,6 +283,12 @@ public class LeapAbility : Ability
 
         while (elapsed < airSeconds)
         {
+            if (TimeStopWorld.IsFrozenPlayer(traveler))
+            {
+                if (rb != null) rb.linearVelocity = Vector2.zero;
+                yield return null;
+                continue;
+            }
             elapsed += Time.deltaTime;
             float k = Mathf.Clamp01(elapsed / airSeconds);
 

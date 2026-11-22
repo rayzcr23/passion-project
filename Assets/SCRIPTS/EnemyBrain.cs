@@ -82,6 +82,12 @@ public class EnemyBrain : NetworkBehaviour
     void FixedUpdate()
     {
         if (!IsServer) return;
+        if (TimeStopWorld.IsStopped)
+        {
+            rb.linearVelocity = Vector2.zero;
+            SetSpeed(0f);
+            return;
+        }
 
         if (health.IsDead)
         {

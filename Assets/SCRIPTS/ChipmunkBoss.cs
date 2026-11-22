@@ -107,6 +107,11 @@ public class ChipmunkBoss : NetworkBehaviour
     void FixedUpdate()
     {
         if (!IsServer || health == null || health.IsDead) return;
+        if (TimeStopWorld.IsStopped)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
         if (slashRoutineRunning || Time.time < hitstunUntil)
         {
             rb.linearVelocity = Vector2.zero;
@@ -156,7 +161,7 @@ public class ChipmunkBoss : NetworkBehaviour
         Vector2 slashCenter = (Vector2)transform.position + direction * slashReach;
         PlayWarningRpc(slashCenter, slashRadius);
 
-        yield return new WaitForSeconds(windupSeconds);
+        yield return WaitForUnfrozenSeconds(windupSeconds);
 
         if (health == null || health.IsDead)
         {
@@ -168,12 +173,21 @@ public class ChipmunkBoss : NetworkBehaviour
         PlaySlashRpc(transform.position, slashCenter, direction, slashRadius);
 
         currentState.Value = (int)State.Recovering;
-        yield return new WaitForSeconds(recoverSeconds);
+        yield return WaitForUnfrozenSeconds(recoverSeconds);
 
         if (currentState.Value != (int)State.Defeated)
             currentState.Value = (int)State.Idle;
 
         slashRoutineRunning = false;
+    }
+
+    static IEnumerator WaitForUnfrozenSeconds(float duration)
+    {
+        while (duration > 0f || TimeStopWorld.IsStopped)
+        {
+            if (!TimeStopWorld.IsStopped) duration -= Time.deltaTime;
+            yield return null;
+        }
     }
 
     void ServerDealSlashDamage(Vector2 center, Vector2 direction)

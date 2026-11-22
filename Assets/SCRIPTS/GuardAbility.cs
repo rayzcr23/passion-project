@@ -46,6 +46,7 @@ public class GuardAbility : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
+        if (TimeStopWorld.IsFrozenPlayer(GetComponent<AbilityLoadout>())) return;
 
         bool wants = !(death != null && death.IsDead)
                      && ((useRightMouse && Input.GetMouseButton(1)) || Input.GetKey(key)

@@ -53,7 +53,8 @@ public class Projectile : NetworkBehaviour
         Vector2 dir = heading.Value;
 
         transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
-        rb.linearVelocity = dir * speed;
+        rb.linearVelocity = TimeStopWorld.IsStopped
+            ? Vector2.zero : dir * speed;
 
         if (sprite != null) sprite.sortingOrder = sortingOrder.Value;
     }
@@ -63,14 +64,24 @@ public class Projectile : NetworkBehaviour
         // Only the server retires it; despawn replicates to everyone.
         if (!IsServer) return;
 
+        if (TimeStopWorld.IsStopped) return;
+
         age += Time.deltaTime;
         if (age >= lifetime) NetworkObject.Despawn();
+    }
+
+    void FixedUpdate()
+    {
+        if (rb == null) return;
+        rb.linearVelocity = TimeStopWorld.IsStopped
+            ? Vector2.zero : heading.Value * speed;
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         // Damage is a server decision. Clients run this too but must not act on it.
         if (!IsServer) return;
+        if (TimeStopWorld.IsStopped) return;
         if ((hitLayers.value & (1 << other.gameObject.layer)) == 0) return;
 
         // Don't let a shot hit the player who fired it as it leaves the muzzle.
