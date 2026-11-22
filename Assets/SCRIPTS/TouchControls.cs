@@ -71,6 +71,23 @@ public class TouchControls : MonoBehaviour
     public static bool RidePressed => Visible && Instance != null && Instance.TakeRide();
     public static bool IcePressed => Visible && Instance != null && Instance.TakeIce();
     public static bool InteractPressed => Visible && Instance != null && Instance.TakeInteract();
+    /// Direct touch edge for dialogue, independent of script Update order.
+    public static bool InteractTouchedThisFrame
+    {
+        get
+        {
+            if (!Visible || Instance == null) return false;
+            Rect button = Instance.ButtonRects()[6];
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch touch = Input.GetTouch(i);
+                if (touch.phase != TouchPhase.Began) continue;
+                if (button.Contains(new Vector2(touch.position.x, Screen.height - touch.position.y)))
+                    return true;
+            }
+            return false;
+        }
+    }
     public static bool TimePressed => Visible && Instance != null && Instance.TakeTimeStop();
 
     /// True if player is currently pressing or holding any virtual control (joystick or action buttons).

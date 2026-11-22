@@ -18,6 +18,7 @@ public class DialogueUI : MonoBehaviour
     string speaker;
     string[] lines;
     int index;
+    int openedFrame;
     Action onFinished;
     bool showQuestLog = true;
 
@@ -64,6 +65,7 @@ public class DialogueUI : MonoBehaviour
         speaker = speakerName;
         lines = content;
         index = 0;
+        openedFrame = Time.frameCount;
         onFinished = finished;
         IsOpen = true;
     }
@@ -74,7 +76,22 @@ public class DialogueUI : MonoBehaviour
 
         if (!IsOpen) return;
 
-        if (Input.GetKeyDown(advanceKey) || Input.GetMouseButtonDown(0))
+        // The same touch that opens a conversation must not skip its first line.
+        if (Time.frameCount == openedFrame) return;
+
+        bool tappedDialogue = false;
+        Rect dialogueRect = DialogueRect();
+        for (int i = 0; i < Input.touchCount; i++)
+        {
+            Touch touch = Input.GetTouch(i);
+            if (touch.phase != TouchPhase.Began) continue;
+            Vector2 guiPosition = new Vector2(touch.position.x, Screen.height - touch.position.y);
+            if (dialogueRect.Contains(guiPosition)) { tappedDialogue = true; break; }
+        }
+
+        if (Input.GetKeyDown(advanceKey) ||
+            (!TouchControls.TouchModeActive && Input.GetMouseButtonDown(0)) ||
+            tappedDialogue || TouchControls.InteractTouchedThisFrame || TouchControls.InteractPressed)
         {
             index++;
             if (index >= lines.Length) Close();
@@ -101,20 +118,27 @@ public class DialogueUI : MonoBehaviour
 
     void DrawDialogue()
     {
-        float scale  = UIScale;
-        float width  = Mathf.Min(Scaled(720f), Screen.width - Scaled(60f));
-        float height = Scaled(130f);
-        var rect = new Rect((Screen.width - width) * 0.5f,
-                            Screen.height - height - Scaled(30f),
-                            width, height);
+        Rect rect = DialogueRect();
+        float width = rect.width;
+        float height = rect.height;
 
         GUI.Box(rect, GUIContent.none, box);
 
         GUI.Label(new Rect(rect.x + Scaled(18f), rect.y + Scaled(12f), width - Scaled(36f), Scaled(24f)), speaker, name_);
         GUI.Label(new Rect(rect.x + Scaled(18f), rect.y + Scaled(42f), width - Scaled(36f), Scaled(70f)), lines[index], body);
 
-        string hint = index < lines.Length - 1 ? "[Space] continue" : "[Space] end";
+        string hint = TouchControls.TouchModeActive
+            ? (index < lines.Length - 1 ? "Tap to continue" : "Tap to finish")
+            : (index < lines.Length - 1 ? "[Space] continue" : "[Space] end");
         GUI.Label(new Rect(rect.x + width - Scaled(150f), rect.y + height - Scaled(26f), Scaled(140f), Scaled(20f)), hint, body);
+    }
+
+    static Rect DialogueRect()
+    {
+        float width = Mathf.Min(Scaled(720f), Screen.width - Scaled(60f));
+        float height = Scaled(130f);
+        return new Rect((Screen.width - width) * 0.5f,
+                        Screen.height - height - Scaled(30f), width, height);
     }
 
     void DrawQuestLog()
